@@ -7,7 +7,7 @@ public class Node : MonoBehaviour
     public Color occupiedColor; // Optional: used if we want to show it's occupied
     
     [Header("References")]
-    public SpriteRenderer rend; // Changed to SpriteRenderer for 2D
+    public Renderer rend; // Supports MeshRenderer for 3D Tiles
 
     [HideInInspector]
     public GameObject turret;
@@ -17,28 +17,25 @@ public class Node : MonoBehaviour
 
     private void Start()
     {
-        if(rend == null) rend = GetComponent<SpriteRenderer>();
-        startColor = rend.color;
+        if(rend == null) rend = GetComponent<Renderer>();
+        startColor = rend.material.color;
         buildManager = BuildManager.Instance;
     }
 
-    private void OnMouseEnter()
+    public void OnHoverEnter()
     {
-        if (EventSystem.current.IsPointerOverGameObject()) return;
         if (!buildManager.CanBuild) return;
-
-        rend.color = hoverColor;
+        rend.material.color = hoverColor;
     }
 
-    private void OnMouseExit()
+    public void OnHoverExit()
     {
-        rend.color = startColor;
+        rend.material.color = startColor;
     }
 
-    private void OnMouseDown()
+    public void OnClick()
     {
-        if (EventSystem.current.IsPointerOverGameObject()) return;
-
+        // Removed Pointer check as InputManager handles it
         if (turret != null)
         {
             buildManager.SelectNode(this);

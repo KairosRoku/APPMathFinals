@@ -10,6 +10,7 @@ public class Projectile : MonoBehaviour
     private float _slowDur;
     
     public float Speed = 10f;
+    public GameObject ImpactVFXPrefab;
 
     public void Seek(EnemyBase target, float damage, ElementType element, float burnDmg, float slowAmt, float slowDur)
     {
@@ -47,15 +48,22 @@ public class Projectile : MonoBehaviour
 
     private void HitTarget()
     {
+        if (ImpactVFXPrefab != null)
+        {
+            Instantiate(ImpactVFXPrefab, transform.position, Quaternion.identity);
+        }
         _target.TakeDamage(_damage, _element);
         
-        if (_element == ElementType.Fire)
-        {
-            _target.ApplyBurn(_burnDmg, 3f);
-        }
-        else if (_element == ElementType.Ice)
+        // Apply Slow if Ice component exists
+        if (_element == ElementType.Ice || _element == ElementType.LightningIce || _element == ElementType.FireIce)
         {
             _target.ApplySlow(_slowAmt, _slowDur);
+        }
+        
+        // Apply Burn if Fire component exists
+        if (_element == ElementType.Fire || _element == ElementType.LightningFire || _element == ElementType.FireIce)
+        {
+            _target.ApplyBurn(_burnDmg, 3f);
         }
 
         Destroy(gameObject);

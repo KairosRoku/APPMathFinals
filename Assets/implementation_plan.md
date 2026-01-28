@@ -7,18 +7,21 @@
     - No `Rigidbody2D` or `Collider2D` triggers for game logic if possible (use distance checks for range).
     - If collisions are needed (mouse clicks), use `Physics2D.Raycast` but avoid rigidbody dynamics.
 
-## 2. Environment & Path System
-- [ ] **Waypoint System**: Create `PathController` managing a list of `Transform` waypoints (Z=0).
-- [ ] **Grid/Placement System**: Create `Node` script for tile locations where towers can be placed.
-    - Logic for `IsOccupied`.
-    - Logic for `Highlighting` on hover (Sprite Color Change).
+## 2. Environment & Path System (2.5D Tile-Based)
+- [ ] **Tile System**: 
+    - Use 3D Cube/Quad Prefabs for the ground.
+    - **Path Tiles**: Designated tiles for enemies to walk on top of.
+    - **Tower Nodes**: Designated tiles (raised or distinctly colored) for tower placement.
+- [ ] **Camera**: Perspective or Orthographic angled at ~45-60 degrees for 2.5D look.
+- [ ] **InputManager Update**: 
+    - Switch from 2D plane cast to `Physics.Raycast` against the 3D Tile Colliders (BoxCollider).
+    - *Note:* We technically used specific 3D colliders for tiles now, but keep Logic physics-free (Movement is still Math-based).
 
 ## 3. Wave & Enemy System
 - [ ] **EnemyBase Script**:
-    - Stats: HP, Speed, KillReward.
-    - Movement: `Update()` using `Vector3.MoveTowards` towards current Waypoint. **NO NavMesh, NO Physics for movement.**
-    - Health Bar: World-space UI canvas (Screen Space Camera or Overlay) or Sprite-based.
-    - Visuals: usage of `SpriteRenderer` and color flash logic.
+    - **Visuals**: Use `Billboard` script so 2D Sprites always face the Camera.
+    - Movement: Math-based `MoveTowards` along the top center of Path Tiles.
+    - Health Bar: World-space Canvas (Billboarded).
 - [ ] **Enemy Variations**: Grunt, Tank, Runner (Inheritance or ScriptableObjects).
 - [ ] **WaveManager**:
     - List of Waves (struct/class).

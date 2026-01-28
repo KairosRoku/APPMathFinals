@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 
 public class InputManager : MonoBehaviour
 {
@@ -24,22 +25,20 @@ public class InputManager : MonoBehaviour
         HandleNodeInteraction();
     }
 
+
+
     private void HandleNodeInteraction()
     {
-        Vector3 mousePos = _cam.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = 0; // Force 2D plane
-
+        if (Mouse.current == null) return;
+        
+        Vector2 mousePosition = Mouse.current.position.ReadValue();
+        Ray ray = _cam.ScreenPointToRay(mousePosition);
+        RaycastHit hit;
         Node foundNode = null;
-        float nodeRadius = 0.5f; // Assuming 1x1 sprite, radius 0.5 checking distance
 
-        // Optimized: Could use Grid lookup if we had coordinates, but array loop is fine for < 1000 nodes
-        foreach (var node in _allNodes)
+        if (Physics.Raycast(ray, out hit))
         {
-            if (Vector3.Distance(mousePos, node.transform.position) <= nodeRadius)
-            {
-                foundNode = node;
-                break;
-            }
+            foundNode = hit.transform.GetComponent<Node>();
         }
 
         // Hover Logic
@@ -51,7 +50,7 @@ public class InputManager : MonoBehaviour
         }
 
         // Click Logic
-        if (Input.GetMouseButtonDown(0) && _currentNode != null)
+        if (Mouse.current.leftButton.wasPressedThisFrame && _currentNode != null)
         {
             _currentNode.OnClick();
         }

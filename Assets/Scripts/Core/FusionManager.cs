@@ -83,7 +83,7 @@ public class FusionManager : MonoBehaviour
 
     
     // Correction: Redo method with proper types
-    private GameObject GetFusionResult(ElementType e1, ElementType e2)
+    public GameObject GetFusionResult(ElementType e1, ElementType e2)
     {
         foreach (var recipe in Recipes)
         {

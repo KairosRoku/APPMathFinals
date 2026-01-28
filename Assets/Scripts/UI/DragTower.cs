@@ -48,43 +48,55 @@ public class DragTower : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         if (_slideIcon != null)
         {
             _slideIcon.transform.position = eventData.position;
+            
+            // Raycast for hover icon
+            Ray ray = _cam.ScreenPointToRay(eventData.position);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, 1000f))
+            {
+                Node node = hit.transform.GetComponent<Node>();
+                if (node != null)
+                {
+                    bool fusionPossible = false;
+                    if (node.turret != null)
+                    {
+                        TowerBase t1 = node.turret.GetComponent<TowerBase>();
+                        TowerBase t2 = Tower.prefab.GetComponent<TowerBase>();
+                        if (t1 != null && t2 != null)
+                        {
+                            fusionPossible = FusionManager.Instance.GetFusionResult(t1.Element, t2.Element) != null;
+                        }
+                    }
+                    BuildManager.Instance.UpdateSelectionIcon(node, fusionPossible);
+                }
+                else
+                {
+                    BuildManager.Instance.UpdateSelectionIcon(null);
+                }
+            }
+            else
+            {
+                BuildManager.Instance.UpdateSelectionIcon(null);
+            }
         }
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
         if (_slideIcon != null) Destroy(_slideIcon);
+        BuildManager.Instance.UpdateSelectionIcon(null);
 
         // Raycast to find Node
         Ray ray = _cam.ScreenPointToRay(eventData.position);
         RaycastHit hit;
         
-        Debug.Log($"DragTower: Raycasting from {eventData.position}");
-        
         if (Physics.Raycast(ray, out hit, 1000f))
         {
-            Debug.Log($"DragTower: Hit {hit.transform.name}");
             Node node = hit.transform.GetComponent<Node>();
             if (node != null)
             {
-                Debug.Log($"DragTower: Found Node, attempting to build");
-                if (BuildManager.Instance != null)
-                {
-                    BuildManager.Instance.BuildTurretOn(node);
-                }
-                else
-                {
-                    Debug.LogError("BuildManager.Instance is null!");
-                }
+                BuildManager.Instance.TryFuseOrBuild(node, Tower);
             }
-            else
-            {
-                Debug.Log($"DragTower: Hit object has no Node component");
-            }
-        }
-        else
-        {
-            Debug.Log("DragTower: Raycast hit nothing");
         }
         
         // Clear selection

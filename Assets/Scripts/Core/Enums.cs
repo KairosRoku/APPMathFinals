@@ -3,7 +3,10 @@ public enum ElementType
     None,
     Fire,
     Ice,
-    Lightning
+    Lightning,
+    LightningIce,
+    FireIce,
+    LightningFire
 }
 
 public enum EnemyType

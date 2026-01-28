@@ -5,11 +5,21 @@ using TMPro;
 
 public class GameUI : MonoBehaviour
 {
+    public static GameUI Instance;
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+    }
+
     [Header("Text Elements")]
     [Header("Text Elements")]
     public TextMeshProUGUI GoldText;
     public TextMeshProUGUI HealthText;
     public TextMeshProUGUI WaveText;
+    
+    [Header("Buttons")]
+    public Button StartWaveButton;
 
     [Header("Panels")]
     public GameObject PauseMenuConfig;
@@ -31,6 +41,13 @@ public class GameUI : MonoBehaviour
         
         if (PauseMenuConfig != null) PauseMenuConfig.SetActive(false);
          if (GameOverPanel != null) GameOverPanel.SetActive(false);
+        
+        if (StartWaveButton != null)
+        {
+            StartWaveButton.onClick.AddListener(() => {
+                FindAnyObjectByType<WaveManager>().StartNextWave();
+            });
+        }
     }
 
     private void OnDestroy()
@@ -46,12 +63,14 @@ public class GameUI : MonoBehaviour
 
     // Lerp Gold for smooth feedback
     private Coroutine goldCoroutine;
+    private int _currentVisualGold; // Track locally to avoid parsing errors
+
     private void UpdateGold(int newAmount) 
     {
         if (GoldText == null) return;
         
         if (goldCoroutine != null) StopCoroutine(goldCoroutine);
-        goldCoroutine = StartCoroutine(AnimateGold(int.Parse(GoldText.text), newAmount));
+        goldCoroutine = StartCoroutine(AnimateGold(_currentVisualGold, newAmount));
     }
 
     IEnumerator AnimateGold(int start, int end)
@@ -62,10 +81,11 @@ public class GameUI : MonoBehaviour
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            int current = (int)Mathf.Lerp(start, end, elapsed / duration);
-            GoldText.text = current.ToString();
+            _currentVisualGold = (int)Mathf.Lerp(start, end, elapsed / duration);
+            GoldText.text = _currentVisualGold.ToString();
             yield return null;
         }
+        _currentVisualGold = end;
         GoldText.text = end.ToString();
     }
 

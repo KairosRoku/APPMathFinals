@@ -11,11 +11,10 @@ public class Coin : MonoBehaviour
 
     private void Start()
     {
-        // Find CoinUI in scene (Tag it or Singleton)
-        GameObject uiObj = GameObject.FindGameObjectWithTag("CoinUI");
-        if (uiObj != null)
+        // Find CoinUI via GameUI Singleton
+        if (GameUI.Instance != null && GameUI.Instance.GoldText != null)
         {
-            targetUI = uiObj.transform;
+            targetUI = GameUI.Instance.GoldText.transform;
             targetPos = Camera.main.ScreenToWorldPoint(targetUI.position);
             targetPos.z = 0; // Ensure 2D
             

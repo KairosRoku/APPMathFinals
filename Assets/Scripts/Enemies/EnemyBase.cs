@@ -11,8 +11,8 @@ public class EnemyBase : MonoBehaviour
     public EnemyType Type;
 
     [Header("References")]
-    public SpriteRenderer EnemyRenderer;
-    public Image HealthBarFill; // Must be assigned
+    public Renderer EnemyRenderer; // Can be SpriteRenderer (2D) or MeshRenderer (3D)
+    public Scrollbar HealthBar; // Using Scrollbar for easy setup
     public GameObject CoinPrefab;
 
     private float _currentHP;
@@ -33,7 +33,7 @@ public class EnemyBase : MonoBehaviour
     {
         _currentHP = MaxHP;
         _baseSpeed = Speed;
-        if(EnemyRenderer != null) _originalColor = EnemyRenderer.color;
+        if(EnemyRenderer != null) _originalColor = EnemyRenderer.material.color;
 
         if (PathController.Instance != null)
         {
@@ -152,7 +152,7 @@ public class EnemyBase : MonoBehaviour
         while (t < 1f)
         {
             t += Time.deltaTime / (duration/2);
-            EnemyRenderer.color = Color.Lerp(_originalColor, Color.red, t);
+            EnemyRenderer.material.color = Color.Lerp(_originalColor, Color.red, t);
             yield return null;
         }
         
@@ -161,28 +161,28 @@ public class EnemyBase : MonoBehaviour
         while (t < 1f)
         {
             t += Time.deltaTime / (duration/2);
-            EnemyRenderer.color = Color.Lerp(Color.red, _originalColor, t);
+            EnemyRenderer.material.color = Color.Lerp(Color.red, _originalColor, t);
             yield return null;
         }
-        EnemyRenderer.color = _originalColor;
+        EnemyRenderer.material.color = _originalColor;
     }
 
     // Lerp Health Bar
     private IEnumerator UpdateHealthUI()
     {
-        if (HealthBarFill == null) yield break;
+        if (HealthBar == null) yield break;
 
-        float targetFill = _currentHP / MaxHP;
-        float startFill = HealthBarFill.fillAmount;
+        float targetSize = _currentHP / MaxHP;
+        float startSize = HealthBar.size;
         float t = 0;
         float duration = 0.2f;
 
         while (t < 1f)
         {
             t += Time.deltaTime / duration;
-            HealthBarFill.fillAmount = Mathf.Lerp(startFill, targetFill, t);
+            HealthBar.size = Mathf.Lerp(startSize, targetSize, t);
             yield return null;
         }
-        HealthBarFill.fillAmount = targetFill;
+        HealthBar.size = targetSize;
     }
 }

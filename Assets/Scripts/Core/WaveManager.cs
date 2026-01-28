@@ -15,34 +15,28 @@ public class WaveManager : MonoBehaviour
     public Wave[] Waves; // We will populate this programmatically or in Inspector
     public Transform SpawnPoint;
 
-    public float timeBetweenWaves = 5f;
-    private float countdown = 2f;
     private int waveIndex = 0;
+    private bool _waveInProgress = false;
 
+    // Remove Auto Update
     private void Update()
     {
-        if (waveIndex >= Waves.Length)
-        {
-            // Level Won logic if all enemies dead
-            return;
-        }
+       // Check for enemies alive to determine if wave ended?
+       // For now, simple manual start.
+    }
 
-        if (countdown <= 0f)
-        {
-            StartCoroutine(SpawnWave());
-            countdown = timeBetweenWaves;
-        }
-
-        countdown -= Time.deltaTime;
-        // Update Timer UI
+    public void StartNextWave()
+    {
+        if (_waveInProgress || waveIndex >= Waves.Length) return;
+        StartCoroutine(SpawnWave());
     }
 
     IEnumerator SpawnWave()
     {
+        _waveInProgress = true;
         Wave wave = Waves[waveIndex];
         
         // Dynamic Scaling based on GDD
-        // Wave 1-10: 5, 8, 12, 16... 65
         int enemyCount = GetEnemyCountForWave(waveIndex + 1); 
         
         for (int i = 0; i < enemyCount; i++)
@@ -52,6 +46,7 @@ public class WaveManager : MonoBehaviour
         }
 
         waveIndex++;
+        _waveInProgress = false; // Allow next wave whenever user clicks
     }
 
     void SpawnEnemy(GameObject prefab)
