@@ -182,9 +182,11 @@ MonoBehaviour:
   Range: 3
   Damage: 10
   FireRate: 1
-  Element: 0
+  Element: 6
+  ExplosionRadius: 0
   FirePoint: {fileID: 4471054460898240753}
   ProjectilePrefab: {fileID: 2706807634985187433, guid: 1c748a301b574104e9556baf8f1467d5, type: 3}
+  ImpactVFXPrefab: {fileID: 0}
   LaserLine: {fileID: 2043024530386817464}
   IcePulseSprite: {fileID: 0}
   BurnDamage: 2

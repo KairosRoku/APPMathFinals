@@ -240,6 +240,13 @@
    - Add `SimpleVFX.cs` to these prefabs.
    - Configure **Duration** (~0.3s) and **Scale/Color** lerps.
    - Assign these to the **Impact VFX Prefab** slot in your Tower (for Lightning/Ice) or Projectile (for Fire).
+3. **Projectile Trails**:
+   - Create a small soft-edged circle sprite prefab.
+   - Add `SimpleVFX.cs` to it (to make it fade out).
+   - Assign it to the **Trail Prefab** slot on your Projectile prefab.
+4. **Enemy Status Overlays**:
+   - For **Freeze**: Create a light blue frost sprite or ice block as a child of the Enemy prefab. Disable it by default and drag it into the **Freeze Overlay** slot in `EnemyBase`.
+   - For **Shock**: Create a small bolt/spark sprite as a child of the Enemy prefab. Disable it and drag it into the **Shock Overlay** slot.
 
 ## 5. Critical Checklist
 

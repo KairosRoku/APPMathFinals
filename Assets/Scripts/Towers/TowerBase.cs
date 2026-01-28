@@ -9,6 +9,7 @@ public class TowerBase : MonoBehaviour
     public float Damage = 10f;
     public float FireRate = 1f;
     public ElementType Element;
+    public float ExplosionRadius = 0f; // For Fire AOE
 
     [Header("Visuals")]
     public Transform FirePoint;
@@ -97,15 +98,21 @@ public class TowerBase : MonoBehaviour
     private void Shoot()
     {
         // Attack Logic based on Element
-        if (Element == ElementType.Lightning || Element == ElementType.LightningIce || Element == ElementType.LightningFire)
+        if (Element == ElementType.Lightning || Element == ElementType.LightningLightning || 
+            Element == ElementType.FireLightning || Element == ElementType.IceLightning)
         {
             // Instant Hit / Chain
             ChainLightningAttack();
         }
-        else if (Element == ElementType.Ice)
+        else if (Element == ElementType.Ice || Element == ElementType.IceIce)
         {
             // Ice Pulse AOE
             IcePulseAttack();
+        }
+        else if (Element == ElementType.FireFire)
+        {
+            // Spreading Fire
+            FireFireSpreadingAttack();
         }
         else if (ProjectilePrefab != null)
         {
@@ -116,7 +123,7 @@ public class TowerBase : MonoBehaviour
             if (projectile != null)
             {
                 // Slow/Burn amounts can be passed or handled in DealDamage upon impact
-                projectile.Seek(_target, Damage, Element, BurnDamage, SlowAmount, SlowDuration);
+                projectile.Seek(_target, Damage, Element, BurnDamage, SlowAmount, SlowDuration, ExplosionRadius);
             }
         }
     }
@@ -129,15 +136,20 @@ public class TowerBase : MonoBehaviour
              StartCoroutine(AnimateIcePulse());
          }
          
-         // Freeze enemies in small radius around tower
+         // Slow/Freeze enemies in small radius around tower
          EnemyBase[] allEnemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
          foreach(var enemy in allEnemies)
          {
              if(Vector3.Distance(transform.position, enemy.transform.position) <= Range)
              {
-                 // Stun effect -> High Slow or Stop
-                 // bloon style freeze usually stops them completely for a moment
-                 enemy.ApplySlow(1f, 1f); // 100% slow for 1 sec
+                 if (Element == ElementType.IceIce)
+                 {
+                     enemy.ApplySlow(1f, SlowDuration); // 100% slow for duration
+                 }
+                 else
+                 {
+                     enemy.ApplySlow(SlowAmount, SlowDuration);
+                 }
                  enemy.TakeDamage(Damage, Element); 
              }
          }
@@ -162,27 +174,111 @@ public class TowerBase : MonoBehaviour
         DealDamage(_target);
         SpawnImpactVFX(_target.transform.position);
 
-        // Chain Logic - Find nearby enemies and show chain lines
+        // Chain Logic
+        List<EnemyBase> hitEnemies = new List<EnemyBase> { _target };
+        int maxChains = 2; // Default
+        if (Element == ElementType.LightningLightning) maxChains = 99; // "Entire wave"
+
+        Vector3 lastHitPosition = _target.transform.position;
+        EnemyBase currentSource = _target;
+
+        for (int i = 0; i < maxChains; i++)
+        {
+            EnemyBase nextTarget = FindNextChainTarget(currentSource, hitEnemies);
+            if (nextTarget == null)
+            {
+                // Last enemy in chain effects
+                ApplyLastChainEffects(currentSource);
+                break;
+            }
+
+            CreateChainLine(lastHitPosition, nextTarget.transform.position);
+            DealDamage(nextTarget);
+            SpawnImpactVFX(nextTarget.transform.position);
+
+            hitEnemies.Add(nextTarget);
+            lastHitPosition = nextTarget.transform.position;
+            currentSource = nextTarget;
+
+            // If it's the last possible chain in the loop, apply effects
+            if (i == maxChains - 1)
+            {
+                ApplyLastChainEffects(nextTarget);
+            }
+        }
+    }
+
+    private EnemyBase FindNextChainTarget(EnemyBase source, List<EnemyBase> alreadyHit)
+    {
         EnemyBase[] allEnemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
-        int chainCount = 0;
-        Vector3 lastHitPosition = _target.transform.position; // Chain from last hit enemy
-        
+        EnemyBase nearest = null;
+        float shortestDist = Mathf.Infinity;
+
         foreach (EnemyBase enemy in allEnemies)
         {
-            if (chainCount >= 2) break; // Max 2 chains
-            if (enemy == _target) continue;
+            if (alreadyHit.Contains(enemy)) continue;
 
-            float dist = Vector3.Distance(lastHitPosition, enemy.transform.position);
-            if (dist <= 3f) // 3f is the bounce range
+            float dist = Vector3.Distance(source.transform.position, enemy.transform.position);
+            if (dist <= 4f && dist < shortestDist) // 4f bounce range
             {
-                // Create visual chain line
-                CreateChainLine(lastHitPosition, enemy.transform.position);
-                
-                DealDamage(enemy);
-                SpawnImpactVFX(enemy.transform.position);
-                lastHitPosition = enemy.transform.position; // Next chain starts from this enemy
-                chainCount++;
+                shortestDist = dist;
+                nearest = enemy;
             }
+        }
+        return nearest;
+    }
+
+    private void ApplyLastChainEffects(EnemyBase lastEnemy)
+    {
+        if (Element == ElementType.FireLightning)
+        {
+            // AOE on the last enemy
+            SpawnImpactVFX(lastEnemy.transform.position);
+            EnemyBase[] allEnemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
+            foreach (EnemyBase enemy in allEnemies)
+            {
+                if (Vector3.Distance(lastEnemy.transform.position, enemy.transform.position) <= 2f) // Arbitrary AOE radius
+                {
+                    enemy.TakeDamage(Damage * 0.5f, Element);
+                    enemy.ApplyBurn(BurnDamage, 2f);
+                }
+            }
+        }
+        else if (Element == ElementType.IceLightning)
+        {
+            // Slow + Freeze on the last enemy
+            lastEnemy.ApplySlow(1f, SlowDuration); // Freeze
+        }
+    }
+
+    private void FireFireSpreadingAttack()
+    {
+        // Fire projectile to first target
+        GameObject projectileGO = Instantiate(ProjectilePrefab, FirePoint.position, FirePoint.rotation);
+        Projectile projectile = projectileGO.GetComponent<Projectile>();
+        if (projectile != null)
+        {
+            projectile.Seek(_target, Damage, Element, BurnDamage, SlowAmount, SlowDuration);
+        }
+
+        // Spreading Logic (DoT only for subsequent)
+        List<EnemyBase> hitEnemies = new List<EnemyBase> { _target };
+        float[] spreadMultipliers = { 0.5f, 0.3f };
+        EnemyBase currentSource = _target;
+
+        foreach (float mult in spreadMultipliers)
+        {
+            EnemyBase nextTarget = FindNextChainTarget(currentSource, hitEnemies);
+            if (nextTarget == null) break;
+
+            // Apply partial DoT
+            nextTarget.ApplyBurn(BurnDamage * mult, 3f);
+            
+            // Visual for spread (can use a chain line or similar)
+            CreateChainLine(currentSource.transform.position, nextTarget.transform.position);
+
+            hitEnemies.Add(nextTarget);
+            currentSource = nextTarget;
         }
     }
 
@@ -196,19 +292,35 @@ public class TowerBase : MonoBehaviour
 
     private void DealDamage(EnemyBase enemy)
     {
-          enemy.TakeDamage(Damage, Element);
-          
-          // Apply Slow if Ice component exists
-          if (Element == ElementType.Ice || Element == ElementType.LightningIce || Element == ElementType.FireIce)
-          {
-              enemy.ApplySlow(SlowAmount, SlowDuration);
-          }
-          
-          // Apply Burn if Fire component exists
-          if (Element == ElementType.Fire || Element == ElementType.LightningFire || Element == ElementType.FireIce)
-          {
-              enemy.ApplyBurn(BurnDamage, 3f);
-          }
+        float actualDamage = Damage;
+        if (Element == ElementType.LightningLightning) actualDamage *= 2.5f; // "High damage"
+
+        enemy.TakeDamage(actualDamage, Element);
+
+        // Apply Slow (Ice component)
+        if (Element == ElementType.Ice || Element == ElementType.FireIce || Element == ElementType.IceLightning)
+        {
+            enemy.ApplySlow(SlowAmount, SlowDuration);
+        }
+
+        // Apply Freeze (IceIce)
+        if (Element == ElementType.IceIce)
+        {
+            enemy.ApplySlow(1f, SlowDuration);
+        }
+
+        // Apply Burn (Fire component)
+        if (Element == ElementType.Fire || Element == ElementType.FireIce || Element == ElementType.FireLightning || Element == ElementType.FireFire)
+        {
+            enemy.ApplyBurn(BurnDamage, 3f);
+        }
+
+        // Apply Shock (Lightning component)
+        if (Element == ElementType.Lightning || Element == ElementType.LightningLightning || 
+            Element == ElementType.FireLightning || Element == ElementType.IceLightning)
+        {
+            enemy.ApplyShock(0.5f);
+        }
     }
     
     private void CreateChainLine(Vector3 from, Vector3 to)

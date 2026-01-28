@@ -20,14 +20,21 @@ public class EnemyBase : MonoBehaviour
     private int _targetWaypointIndex;
     private float _baseSpeed;
     
-    // Status Effects
+    [Header("Status Visuals")]
+    public GameObject FreezeOverlay; // Show an ice block or frost sprite
+    public GameObject ShockOverlay;  // Show sparks or electricity sprite
+    public Color FreezeColor = new Color(0.5f, 0.8f, 1f, 1f);
+    public Color BurnColor = new Color(1f, 0.5f, 0.3f, 1f);
+
     private float _slowFactor = 1f;
     private float _slowTimer = 0f;
     private float _burnDamage = 0f;
     private float _burnTimer = 0f;
     private float _burnTickTimer = 0f;
+    private float _shockTimer = 0f;
     
     private Color _originalColor;
+    private Color _targetStatusColor;
 
     private void Start()
     {
@@ -72,23 +79,49 @@ public class EnemyBase : MonoBehaviour
 
     private void HandleStatusEffects()
     {
-        // Slow Logic
+        _targetStatusColor = _originalColor;
+
+        // Slow / Freeze Visuals
         if (_slowTimer > 0)
         {
             _slowTimer -= Time.deltaTime;
-            if (_slowTimer <= 0) _slowFactor = 1f;
+            _targetStatusColor = Color.Lerp(_targetStatusColor, FreezeColor, 0.6f);
+            if (FreezeOverlay != null) FreezeOverlay.SetActive(true);
+            if (_slowTimer <= 0) 
+            {
+                _slowFactor = 1f;
+                if (FreezeOverlay != null) FreezeOverlay.SetActive(false);
+            }
         }
 
-        // Burn Logic
+        // Burn Visuals
         if (_burnTimer > 0)
         {
             _burnTimer -= Time.deltaTime;
             _burnTickTimer -= Time.deltaTime;
+            _targetStatusColor = Color.Lerp(_targetStatusColor, BurnColor, 0.4f);
             if (_burnTickTimer <= 0)
             {
                 TakeDamage(_burnDamage, ElementType.Fire);
-                _burnTickTimer = 1f; // Tick every second
+                _burnTickTimer = 1f; 
             }
+        }
+
+        // Shock Visuals
+        if (_shockTimer > 0)
+        {
+            _shockTimer -= Time.deltaTime;
+            if (ShockOverlay != null) ShockOverlay.SetActive(true);
+            if (_shockTimer <= 0)
+            {
+                if (ShockOverlay != null) ShockOverlay.SetActive(false);
+            }
+        }
+
+        // Apply constant color tint based on status
+        if (_currentHP > 0 && EnemyRenderer != null)
+        {
+            EnemyRenderer.material.color = Color.Lerp(EnemyRenderer.material.color, _targetStatusColor, Time.deltaTime * 5f);
         }
     }
 
@@ -102,6 +135,11 @@ public class EnemyBase : MonoBehaviour
     {
         _burnDamage = dps;
         _burnTimer = duration;
+    }
+
+    public void ApplyShock(float duration)
+    {
+        _shockTimer = duration;
     }
 
     public void TakeDamage(float amount, ElementType element)

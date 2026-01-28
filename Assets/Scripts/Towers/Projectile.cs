@@ -8,11 +8,17 @@ public class Projectile : MonoBehaviour
     private float _burnDmg;
     private float _slowAmt;
     private float _slowDur;
+    private float _explosionRadius;
     
     public float Speed = 10f;
     public GameObject ImpactVFXPrefab;
 
-    public void Seek(EnemyBase target, float damage, ElementType element, float burnDmg, float slowAmt, float slowDur)
+    [Header("Trail Settings")]
+    public GameObject TrailPrefab;
+    public float TrailSpawnRate = 0.05f;
+    private float _trailTimer = 0f;
+
+    public void Seek(EnemyBase target, float damage, ElementType element, float burnDmg, float slowAmt, float slowDur, float explosionRadius = 0)
     {
         _target = target;
         _damage = damage;
@@ -20,6 +26,7 @@ public class Projectile : MonoBehaviour
         _burnDmg = burnDmg;
         _slowAmt = slowAmt;
         _slowDur = slowDur;
+        _explosionRadius = explosionRadius;
     }
 
     private void Update()
@@ -41,6 +48,17 @@ public class Projectile : MonoBehaviour
 
         transform.Translate(dir.normalized * distanceThisFrame, Space.World);
         
+        // Handle Trail
+        if (TrailPrefab != null)
+        {
+            _trailTimer += Time.deltaTime;
+            if (_trailTimer >= TrailSpawnRate)
+            {
+                Instantiate(TrailPrefab, transform.position, transform.rotation);
+                _trailTimer = 0f;
+            }
+        }
+
         // Rotate (2D)
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
@@ -52,20 +70,51 @@ public class Projectile : MonoBehaviour
         {
             Instantiate(ImpactVFXPrefab, transform.position, Quaternion.identity);
         }
-        _target.TakeDamage(_damage, _element);
-        
-        // Apply Slow if Ice component exists
-        if (_element == ElementType.Ice || _element == ElementType.LightningIce || _element == ElementType.FireIce)
+
+        if (_explosionRadius > 0)
         {
-            _target.ApplySlow(_slowAmt, _slowDur);
+            Explode();
         }
-        
-        // Apply Burn if Fire component exists
-        if (_element == ElementType.Fire || _element == ElementType.LightningFire || _element == ElementType.FireIce)
+        else
         {
-            _target.ApplyBurn(_burnDmg, 3f);
+            ApplyEffects(_target);
         }
 
         Destroy(gameObject);
+    }
+
+    private void Explode()
+    {
+        EnemyBase[] enemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
+        foreach (EnemyBase enemy in enemies)
+        {
+            if (Vector3.Distance(transform.position, enemy.transform.position) <= _explosionRadius)
+            {
+                ApplyEffects(enemy);
+            }
+        }
+    }
+
+    private void ApplyEffects(EnemyBase enemy)
+    {
+        enemy.TakeDamage(_damage, _element);
+
+        // Fire status (DoT)
+        if (_element == ElementType.Fire || _element == ElementType.FireIce || _element == ElementType.FireLightning || _element == ElementType.FireFire)
+        {
+            enemy.ApplyBurn(_burnDmg, 3f);
+        }
+
+        // Ice status (Slow)
+        if (_element == ElementType.Ice || _element == ElementType.FireIce || _element == ElementType.IceLightning)
+        {
+            enemy.ApplySlow(_slowAmt, _slowDur);
+        }
+        
+        // IceIce (Freeze)
+        if (_element == ElementType.IceIce)
+        {
+            enemy.ApplySlow(1f, _slowDur); // 100% slow = Freeze
+        }
     }
 }

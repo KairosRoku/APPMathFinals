@@ -4,9 +4,12 @@ public enum ElementType
     Fire,
     Ice,
     Lightning,
-    LightningIce,
+    FireFire,
     FireIce,
-    LightningFire
+    FireLightning,
+    IceIce,
+    IceLightning,
+    LightningLightning
 }
 
 public enum EnemyType
