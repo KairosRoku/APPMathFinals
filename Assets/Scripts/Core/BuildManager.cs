@@ -15,9 +15,11 @@ public class BuildManager : MonoBehaviour
     public bool HasMoney { get { return GameManager.Instance.CurrentGold >= towerToBuild.cost; } }
 
     public GameObject SelectionIconPrefab;
+    public GameObject RangeIndicatorPrefab; // New field for range circle
     public GameObject SmokeVFXPrefab;
     
     private GameObject currentSelectionIcon;
+    private GameObject currentRangeIndicator;
 
     public void SelectTowerToBuild(TowerBlueprint tower)
     {
@@ -46,12 +48,29 @@ public class BuildManager : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         
+        int ignoreLayer = LayerMask.NameToLayer("Ignore Raycast");
+        if (ignoreLayer == -1) ignoreLayer = 2; // Fallback to Layer 2 which is usually Ignore Raycast
+
         if (SelectionIconPrefab != null)
         {
             currentSelectionIcon = Instantiate(SelectionIconPrefab);
+            currentSelectionIcon.layer = ignoreLayer;
+            // Also set children
+            foreach (Transform child in currentSelectionIcon.GetComponentsInChildren<Transform>()) child.gameObject.layer = ignoreLayer;
             currentSelectionIcon.SetActive(false);
         }
+
+        if (RangeIndicatorPrefab != null)
+        {
+            currentRangeIndicator = Instantiate(RangeIndicatorPrefab);
+            currentRangeIndicator.layer = ignoreLayer;
+            foreach (Transform child in currentRangeIndicator.GetComponentsInChildren<Transform>()) child.gameObject.layer = ignoreLayer;
+            currentRangeIndicator.SetActive(false);
+        }
     }
+
+    private bool _isPulsing = false;
+    private Coroutine _pulseCoroutine;
 
     public void UpdateSelectionIcon(Node node, bool isFusionPossible = false)
     {
@@ -59,24 +78,56 @@ public class BuildManager : MonoBehaviour
 
         if (node == null)
         {
-            currentSelectionIcon.SetActive(false);
+            if (currentSelectionIcon.activeSelf)
+            {
+                currentSelectionIcon.SetActive(false);
+                if (currentRangeIndicator != null) currentRangeIndicator.SetActive(false);
+                
+                if (_isPulsing)
+                {
+                    if (_pulseCoroutine != null) StopCoroutine(_pulseCoroutine);
+                    _isPulsing = false;
+                    currentSelectionIcon.transform.localScale = Vector3.one;
+                }
+            }
             return;
         }
 
-        currentSelectionIcon.SetActive(true);
+        if (!currentSelectionIcon.activeSelf) currentSelectionIcon.SetActive(true);
         currentSelectionIcon.transform.position = node.transform.position + Vector3.up * 0.1f;
         
+        // Update Range Indicator
+        if (currentRangeIndicator != null && towerToBuild != null)
+        {
+            if (!currentRangeIndicator.activeSelf) currentRangeIndicator.SetActive(true);
+            currentRangeIndicator.transform.position = node.transform.position + Vector3.up * 0.05f;
+            
+            TowerBase towerBase = towerToBuild.prefab.GetComponent<TowerBase>();
+            if (towerBase != null)
+            {
+                float diameter = towerBase.Range * 2f;
+                currentRangeIndicator.transform.localScale = new Vector3(diameter, diameter, 1f);
+            }
+        }
+
+        // Handle Pulse Logic stable
         if (isFusionPossible)
         {
-            // Simple pulse animation logic could be here, but let's just use scale
-            // To make it feel like an "animation" as requested:
-            StopAllCoroutines(); 
-            StartCoroutine(PulseIcon(currentSelectionIcon.transform));
+            if (!_isPulsing)
+            {
+                _isPulsing = true;
+                if (_pulseCoroutine != null) StopCoroutine(_pulseCoroutine);
+                _pulseCoroutine = StartCoroutine(PulseIcon(currentSelectionIcon.transform));
+            }
         }
         else
         {
-            StopAllCoroutines();
-            currentSelectionIcon.transform.localScale = Vector3.one;
+            if (_isPulsing)
+            {
+                _isPulsing = false;
+                if (_pulseCoroutine != null) StopCoroutine(_pulseCoroutine);
+                currentSelectionIcon.transform.localScale = Vector3.one;
+            }
         }
     }
 

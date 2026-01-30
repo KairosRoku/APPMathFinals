@@ -17,12 +17,30 @@ public class WaveManager : MonoBehaviour
 
     private int waveIndex = 0;
     private bool _waveInProgress = false;
+    private float _nextWaveTimer = 0f;
+    private float _autoStartThreshold = 30f;
 
-    // Remove Auto Update
+    private void Start()
+    {
+        _nextWaveTimer = _autoStartThreshold;
+    }
+
     private void Update()
     {
-       // Check for enemies alive to determine if wave ended?
-       // For now, simple manual start.
+        if (_waveInProgress || waveIndex >= Waves.Length) 
+        {
+            if (GameUI.Instance != null) GameUI.Instance.UpdateTimer(0);
+            return;
+        }
+
+        _nextWaveTimer -= Time.deltaTime;
+        
+        if (GameUI.Instance != null) GameUI.Instance.UpdateTimer(_nextWaveTimer);
+
+        if (_nextWaveTimer <= 0)
+        {
+            StartNextWave();
+        }
     }
 
     public void StartNextWave()
@@ -36,22 +54,43 @@ public class WaveManager : MonoBehaviour
         _waveInProgress = true;
         Wave wave = Waves[waveIndex];
         
-        // Dynamic Scaling based on GDD
-        int enemyCount = GetEnemyCountForWave(waveIndex + 1); 
+        // Update UI
+        if (GameUI.Instance != null) GameUI.Instance.UpdateWave(waveIndex + 1);
         
-        for (int i = 0; i < enemyCount; i++)
+        int totalEnemies = GetEnemyCountForWave(waveIndex + 1);
+        int spawnedCount = 0;
+
+        // Group size - enemies of the same type spawn together
+        int groupSize = 5;
+
+        while (spawnedCount < totalEnemies)
         {
-            SpawnEnemy(wave.enemyPrefab);
-            yield return new WaitForSeconds(1f / wave.rate);
+            // Pick a random type for this group
+            EnemyType groupType = (EnemyType)Random.Range(0, System.Enum.GetValues(typeof(EnemyType)).Length);
+            
+            int currentGroupCount = Mathf.Min(groupSize, totalEnemies - spawnedCount);
+            
+            for (int i = 0; i < currentGroupCount; i++)
+            {
+                SpawnEnemy(wave.enemyPrefab, groupType);
+                spawnedCount++;
+                yield return new WaitForSeconds(1f / wave.rate);
+            }
         }
 
         waveIndex++;
-        _waveInProgress = false; // Allow next wave whenever user clicks
+        _waveInProgress = false;
+        _nextWaveTimer = _autoStartThreshold;
     }
 
-    void SpawnEnemy(GameObject prefab)
+    void SpawnEnemy(GameObject prefab, EnemyType type)
     {
-        Instantiate(prefab, SpawnPoint.position, Quaternion.identity);
+        GameObject enemyGO = Instantiate(prefab, SpawnPoint.position, Quaternion.identity);
+        EnemyBase enemy = enemyGO.GetComponent<EnemyBase>();
+        if (enemy != null)
+        {
+            enemy.SetType(type);
+        }
     }
     
     // Hardcoded curve for now based on GDD

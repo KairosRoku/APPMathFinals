@@ -25,6 +25,11 @@
    - Add `SmokeEffect.cs`.
    - Set **Duration**=1, **MaxScale**=3.
    - Save as prefab and drag into `BuildManager.SmokeVFXPrefab`.
+5. **Range Indicator Setup**:
+   - Create a 2D Sprite (Circle).
+   - Set color to semi-transparent white or blue.
+   - Set **Rotation** to X=90 (to lay flat on ground).
+   - Save as prefab and drag into `BuildManager.RangeIndicatorPrefab`.
 
 ### WaveManager Configuration
 1. In Inspector, set **Waves** array size to 10
@@ -43,7 +48,7 @@
   - Set default text to "100" (starting gold)
   - Name it "GoldText"
 - **Health Text**: Same process, default "20"
-- **Wave Text**: Default "Wave: 0"
+- **Wave Text**: Default "Wave: 0" (Displays current wave number)
 
 #### Buttons
 - **Start Wave Button**: 
@@ -75,8 +80,9 @@
 3. Link all references:
    - Gold Text
    - Health Text
-   - Wave Text
-   - Start Wave Button
+    - **Wave Text**: Drag your Wave Text (TMP) here.
+    - **Timer Text**: Drag your Next Wave Timer Text (TMP) here.
+    - **Start Wave Button**: Drag your "Start Wave" UI Button here.
    - Pause Menu
    - Game Over Panel
 
@@ -133,11 +139,12 @@
    - Set Canvas to **World Space**
    - Scale: 0.01, 0.01, 0.01
    - Position above enemy (Y = 1.0)
-   - Right-click Canvas → UI → Scrollbar
-   - Delete the "Sliding Area" child (not needed)
-   - Set **Direction** to **Left To Right**
-   - Set **Size** to 1 (full health)
-   - Link this Scrollbar to `EnemyBase.HealthBar`
+   - Right-click Canvas → UI → **Slider**
+   - **Configure Slider**:
+     - Remove/Disable the "Handle Slide Area" child (static health bars don't need handles)
+     - Set **Min Value** to 0, **Max Value** to 1
+     - Set **Value** to 1
+     - Link this Slider to `EnemyBase.HealthBar`
 
 6. **Coin Prefab Reference**: Assign your coin prefab to `EnemyBase.CoinPrefab`
 
@@ -247,6 +254,15 @@
 4. **Enemy Status Overlays**:
    - For **Freeze**: Create a light blue frost sprite or ice block as a child of the Enemy prefab. Disable it by default and drag it into the **Freeze Overlay** slot in `EnemyBase`.
    - For **Shock**: Create a small bolt/spark sprite as a child of the Enemy prefab. Disable it and drag it into the **Shock Overlay** slot.
+5. **Damage Popups** (NEW!):
+   - Create a new UI GameObject inside your Enemy Prefab's **World Canvas**:
+     - Right-click Canvas → UI → **TextMeshPro - Text (UI)**.
+   - Name it `DamagePopup`.
+   - Add the `DamagePopup.cs` script.
+   - Set the `Text` reference to the component you just added.
+   - Adjust **Duration** (1.0) and **Rise Speed** (50.0).
+   - Save this individual `DamagePopup` object as a **Prefab** (outside the enemy).
+   - **Assign to Enemy**: Drag this prefab into the **Damage Popup Prefab** slot in your `EnemyBase` script on the Enemy prefab.
 
 ## 5. Critical Checklist
 
@@ -270,6 +286,27 @@
 - [ ] **Lightning Tower**: Line Renderer starts with "Enabled" unchecked
 - [ ] **Ice Tower**: Element is set to "Ice" (not Fire or Lightning)
 - [ ] All towers have a **Fire Point** child GameObject
+- [ ] **Enemy Type** is assigned (Fire, Electric, Ice, etc.)
+
+### 6. Elemental Resistance System (NEW!)
+Enemies now have specific types that provide **50% Damage Reduction** against towers of the same element:
+
+| Enemy Type | Resistant to Tower Element | Visual Indicator |
+| :--- | :--- | :--- |
+| **Fire** | Fire, FireFire, FireIce, FireLightning | Reddish Tint |
+| **Electric** | Lightning, LightningLightning, FireLightning, IceLightning | Yellowish Tint |
+| **Ice** | Ice, IceIce, FireIce, IceLightning | Sky Blue Tint |
+
+**Mixed Elements Strategy**:
+- A **Fire/Ice** fused tower will deal **50% damage** to both Fire enemies and Ice enemies.
+- Use towers that *don't* match the enemy type to deal full 100% damage!
+- **Pure physical** enemies (Grunt, Tank, Runner) take full damage from all elements.
+
+**How to Configure**:
+1. Select your enemy prefab.
+2. Change the **Type** dropdown in `EnemyBase`.
+3. The enemy will automatically tint itself at runtime based on its type.
+4. You can customize these tints using the `FireTypeColor`, `IceTypeColor`, and `ElectricTypeColor` fields in the inspector.
 
 ### Testing Steps:
 1. **Press Play**

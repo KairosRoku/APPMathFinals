@@ -218,8 +218,16 @@ MonoBehaviour:
   CoinValue: 10
   Type: 0
   EnemyRenderer: {fileID: 2329033266173582335}
-  HealthBarFill: {fileID: 7785039657118621068}
+  HealthBar: {fileID: 6892161664000593658}
   CoinPrefab: {fileID: 1604090948232698644, guid: e91b0f670b6df214ba7a13a3e930873d, type: 3}
+  DamagePopupPrefab: {fileID: 1776229400548627320, guid: 213b1dbd32c56a4468adb9958faaf751, type: 3}
+  FreezeOverlay: {fileID: 0}
+  ShockOverlay: {fileID: 0}
+  FreezeColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+  BurnColor: {r: 1, g: 0.5, b: 0.3, a: 1}
+  FireTypeColor: {r: 1, g: 0.4, b: 0.4, a: 1}
+  IceTypeColor: {r: 0.4, g: 0.7, b: 1, a: 1}
+  ElectricTypeColor: {r: 1, g: 1, b: 0.3, a: 1}
 --- !u!114 &8061731695068810595
 MonoBehaviour:
   m_ObjectHideFlags: 0

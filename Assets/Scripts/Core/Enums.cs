@@ -16,5 +16,8 @@ public enum EnemyType
 {
     Grunt,
     Tank,
-    Runner
+    Runner,
+    Fire,
+    Electric,
+    Ice
 }

@@ -17,6 +17,7 @@ public class GameUI : MonoBehaviour
     public TextMeshProUGUI GoldText;
     public TextMeshProUGUI HealthText;
     public TextMeshProUGUI WaveText;
+    public TextMeshProUGUI TimerText;
     
     [Header("Buttons")]
     public Button StartWaveButton;
@@ -97,6 +98,19 @@ public class GameUI : MonoBehaviour
     public void UpdateWave(int wave)
     {
         if (WaveText != null) WaveText.text = "Wave: " + wave;
+    }
+
+    public void UpdateTimer(float time)
+    {
+        if (TimerText == null) return;
+        
+        if (time <= 0)
+        {
+            TimerText.text = "";
+            return;
+        }
+        
+        TimerText.text = "Next Wave in: " + Mathf.CeilToInt(time) + "s";
     }
 
     private void PlayDamageEffect()
