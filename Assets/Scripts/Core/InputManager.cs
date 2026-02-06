@@ -19,6 +19,12 @@ public class InputManager : MonoBehaviour
 
     private void Update()
     {
+        // Toggle Pause
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            if (GameUI.Instance != null) GameUI.Instance.TogglePause();
+        }
+
         // Block input if clicking on UI
         if (EventSystem.current.IsPointerOverGameObject()) return;
 

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using TMPro;
 
@@ -23,8 +24,10 @@ public class GameUI : MonoBehaviour
     public Button StartWaveButton;
 
     [Header("Panels")]
-    public GameObject PauseMenuConfig;
+    public GameObject PauseMenuPanel;
+    public GameObject SettingsPanel; // Sub-panel of Pause Menu
     public GameObject GameOverPanel;
+    public GameObject VictoryPanel;
     
     [Header("Effects")]
     public Image DamageVignette;
@@ -35,13 +38,16 @@ public class GameUI : MonoBehaviour
         GameManager.Instance.OnHealthChanged += UpdateHealth;
         GameManager.Instance.OnDamageTaken += PlayDamageEffect;
         GameManager.Instance.OnGameLost += ShowGameOver;
+        GameManager.Instance.OnGameWon += ShowVictory;
         
         // Init
         UpdateGold(GameManager.Instance.CurrentGold);
         UpdateHealth(GameManager.Instance.CurrentHealth);
         
-        if (PauseMenuConfig != null) PauseMenuConfig.SetActive(false);
-         if (GameOverPanel != null) GameOverPanel.SetActive(false);
+        if (PauseMenuPanel != null) PauseMenuPanel.SetActive(false);
+        if (SettingsPanel != null) SettingsPanel.SetActive(false);
+        if (GameOverPanel != null) GameOverPanel.SetActive(false);
+        if (VictoryPanel != null) VictoryPanel.SetActive(false);
         
         if (StartWaveButton != null)
         {
@@ -64,12 +70,11 @@ public class GameUI : MonoBehaviour
 
     // Lerp Gold for smooth feedback
     private Coroutine goldCoroutine;
-    private int _currentVisualGold; // Track locally to avoid parsing errors
+    private int _currentVisualGold;
 
     private void UpdateGold(int newAmount) 
     {
         if (GoldText == null) return;
-        
         if (goldCoroutine != null) StopCoroutine(goldCoroutine);
         goldCoroutine = StartCoroutine(AnimateGold(_currentVisualGold, newAmount));
     }
@@ -78,7 +83,6 @@ public class GameUI : MonoBehaviour
     {
         float duration = 0.5f;
         float elapsed = 0f;
-        
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
@@ -103,24 +107,14 @@ public class GameUI : MonoBehaviour
     public void UpdateTimer(float time)
     {
         if (TimerText == null) return;
-        
-        if (time <= 0)
-        {
-            TimerText.text = "";
-            return;
-        }
-        
+        if (time <= 0) { TimerText.text = ""; return; }
         TimerText.text = "Next Wave in: " + Mathf.CeilToInt(time) + "s";
     }
 
     private void PlayDamageEffect()
     {
-        if (DamageVignette != null)
-        {
-            StartCoroutine(FlashVignette());
-        }
-        // Camera Shake
-        CameraShake.Instance.Shake(0.2f, 0.3f);
+        if (DamageVignette != null) StartCoroutine(FlashVignette());
+        if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.2f, 0.3f);
     }
 
     IEnumerator FlashVignette()
@@ -128,7 +122,6 @@ public class GameUI : MonoBehaviour
         Color c = DamageVignette.color;
         c.a = 0.5f;
         DamageVignette.color = c;
-        
         float t = 0;
         while(t < 0.5f)
         {
@@ -142,18 +135,69 @@ public class GameUI : MonoBehaviour
     private void ShowGameOver()
     {
         if (GameOverPanel != null) GameOverPanel.SetActive(true);
+        Time.timeScale = 0; // Pause game on game over
     }
 
+    private void ShowVictory() // New method to show victory panel
+    {
+        if (VictoryPanel != null) VictoryPanel.SetActive(true);
+        Time.timeScale = 0; // Pause game on victory
+    }
+
+    // --- Pause Menu Logic ---
+    
     public void TogglePause()
     {
         bool isPaused = Time.timeScale == 0;
-        Time.timeScale = isPaused ? 1 : 0;
-        if (PauseMenuConfig != null) 
+        if (isPaused) Resume();
+        else Pause();
+    }
+
+    public void Pause()
+    {
+        Time.timeScale = 0;
+        if (PauseMenuPanel != null) 
         {
-            PauseMenuConfig.SetActive(!isPaused);
-            // Simple scale animation
-            if(!isPaused) StartCoroutine(AnimateScaleOpen(PauseMenuConfig.transform));
+            PauseMenuPanel.SetActive(true);
+            StartCoroutine(AnimateScaleOpen(PauseMenuPanel.transform));
         }
+        if (SettingsPanel != null) SettingsPanel.SetActive(false);
+    }
+
+    public void Resume()
+    {
+        Time.timeScale = 1;
+        if (PauseMenuPanel != null) PauseMenuPanel.SetActive(false);
+        if (SettingsPanel != null) SettingsPanel.SetActive(false);
+    }
+
+    public void OpenSettings()
+    {
+        if (SettingsPanel != null) SettingsPanel.SetActive(true);
+        if (PauseMenuPanel != null) PauseMenuPanel.SetActive(false);
+    }
+
+    public void CloseSettings()
+    {
+        if (SettingsPanel != null) SettingsPanel.SetActive(false);
+        if (PauseMenuPanel != null) 
+        {
+            PauseMenuPanel.SetActive(true);
+            // Optionally re-animate or just show
+            PauseMenuPanel.transform.localScale = Vector3.one;
+        }
+    }
+
+    public void BackToMainMenu()
+    {
+        Time.timeScale = 1;
+        SceneManager.LoadScene("MainMenu"); // Transition to MainMenu scene
+    }
+
+    public void RestartLevel()
+    {
+        Time.timeScale = 1;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
     
     IEnumerator AnimateScaleOpen(Transform target)
@@ -162,10 +206,11 @@ public class GameUI : MonoBehaviour
         float t = 0;
         while (t < 0.2f)
         {
-             t += Time.unscaledDeltaTime; // Unscaled because time is 0
+             t += Time.unscaledDeltaTime;
              target.localScale = Vector3.one * Mathf.Lerp(0, 1, t/0.2f);
              yield return null;
         }
         target.localScale = Vector3.one;
     }
 }
+

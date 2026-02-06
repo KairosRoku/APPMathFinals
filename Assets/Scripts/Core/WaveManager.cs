@@ -81,6 +81,9 @@ public class WaveManager : MonoBehaviour
         waveIndex++;
         _waveInProgress = false;
         _nextWaveTimer = _autoStartThreshold;
+        
+        // Trigger win check if this was the last wave
+        GameManager.Instance.CheckLevelCompletion(waveIndex, Waves.Length, _waveInProgress);
     }
 
     void SpawnEnemy(GameObject prefab, EnemyType type)
