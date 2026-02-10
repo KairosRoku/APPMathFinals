@@ -15,9 +15,7 @@ public enum ElementType
 public enum EnemyType
 {
     Grunt,
-    Tank,
     Runner,
-    Fire,
-    Electric,
-    Ice
+    Tank,
+    Boss
 }

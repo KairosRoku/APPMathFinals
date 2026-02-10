@@ -43605,38 +43605,116 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 898c2d9ba080451458d3fcd9d6a14bac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaveManager
+  GruntPrefab: {fileID: 5397138019761556747, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+  RunnerPrefab: {fileID: 5397138019761556747, guid: cb7b1dd7903943243b2bbb6781a93ae4, type: 3}
+  TankPrefab: {fileID: 5397138019761556747, guid: e8ad6d31f03a058408de9721f2cac723, type: 3}
+  BossPrefab: {fileID: 5397138019761556747, guid: ae11318f20400ea469fab7b02ce662dd, type: 3}
   Waves:
-  - count: 5
-    rate: 1
-    enemyPrefab: {fileID: 303666859485261850, guid: 64d74690a9f19c34390f771f00a95942, type: 3}
-  - count: 8
-    rate: 1
-    enemyPrefab: {fileID: 303666859485261850, guid: 64d74690a9f19c34390f771f00a95942, type: 3}
-  - count: 12
-    rate: 1
-    enemyPrefab: {fileID: 303666859485261850, guid: 64d74690a9f19c34390f771f00a95942, type: 3}
-  - count: 16
-    rate: 1
-    enemyPrefab: {fileID: 303666859485261850, guid: 64d74690a9f19c34390f771f00a95942, type: 3}
-  - count: 22
-    rate: 1
-    enemyPrefab: {fileID: 303666859485261850, guid: 64d74690a9f19c34390f771f00a95942, type: 3}
-  - count: 28
-    rate: 1
-    enemyPrefab: {fileID: 303666859485261850, guid: 64d74690a9f19c34390f771f00a95942, type: 3}
-  - count: 35
-    rate: 1
-    enemyPrefab: {fileID: 303666859485261850, guid: 64d74690a9f19c34390f771f00a95942, type: 3}
-  - count: 43
-    rate: 1
-    enemyPrefab: {fileID: 303666859485261850, guid: 64d74690a9f19c34390f771f00a95942, type: 3}
-  - count: 52
-    rate: 1
-    enemyPrefab: {fileID: 303666859485261850, guid: 64d74690a9f19c34390f771f00a95942, type: 3}
-  - count: 65
-    rate: 1
-    enemyPrefab: {fileID: 303666859485261850, guid: 64d74690a9f19c34390f771f00a95942, type: 3}
+  - batches:
+    - type: 0
+      count: 5
+      resistanceEnabled: 0
+    spawnRate: 2
+    densityMultiplier: 1
+  - batches:
+    - type: 0
+      count: 0
+      resistanceEnabled: 0
+    - type: 0
+      count: 4
+      resistanceEnabled: 0
+    spawnRate: 2
+    densityMultiplier: 1
+  - batches:
+    - type: 0
+      count: 6
+      resistanceEnabled: 1
+    - type: 2
+      count: 6
+      resistanceEnabled: 1
+    spawnRate: 2
+    densityMultiplier: 1
+  - batches:
+    - type: 1
+      count: 8
+      resistanceEnabled: 1
+    - type: 2
+      count: 8
+      resistanceEnabled: 1
+    spawnRate: 2
+    densityMultiplier: 1
+  - batches:
+    - type: 0
+      count: 7
+      resistanceEnabled: 1
+    - type: 1
+      count: 7
+      resistanceEnabled: 1
+    - type: 2
+      count: 8
+      resistanceEnabled: 1
+    spawnRate: 2
+    densityMultiplier: 1
+  - batches:
+    - type: 2
+      count: 8
+      resistanceEnabled: 1
+    - type: 1
+      count: 20
+      resistanceEnabled: 1
+    spawnRate: 2
+    densityMultiplier: 1
+  - batches:
+    - type: 0
+      count: 5
+      resistanceEnabled: 1
+    - type: 2
+      count: 30
+      resistanceEnabled: 1
+    spawnRate: 2
+    densityMultiplier: 1
+  - batches:
+    - type: 0
+      count: 15
+      resistanceEnabled: 1
+    - type: 2
+      count: 13
+      resistanceEnabled: 1
+    - type: 1
+      count: 20
+      resistanceEnabled: 1
+    spawnRate: 2
+    densityMultiplier: 1
+  - batches:
+    - type: 0
+      count: 10
+      resistanceEnabled: 1
+    - type: 1
+      count: 10
+      resistanceEnabled: 1
+    - type: 2
+      count: 32
+      resistanceEnabled: 1
+    spawnRate: 2
+    densityMultiplier: 1
+  - batches:
+    - type: 3
+      count: 1
+      resistanceEnabled: 1
+    - type: 0
+      count: 20
+      resistanceEnabled: 1
+    - type: 1
+      count: 24
+      resistanceEnabled: 1
+    - type: 2
+      count: 20
+      resistanceEnabled: 1
+    spawnRate: 2
+    densityMultiplier: 1
   SpawnPoint: {fileID: 574804850}
+  AutoStartThreshold: 30
+  waveIndex: 0
 --- !u!114 &1757840306
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -52835,6 +52913,87 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 52cb7cb13211d444c9ce5bc2a648a3d5, type: 3}
+--- !u!1001 &1535136659608527847
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2294671048830440460, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2294671048830440460, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2513145583343221092, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0.000061035156
+      objectReference: {fileID: 0}
+    - target: {fileID: 2753648125478213545, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2753648125478213545, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2753648125478213545, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5397138019761556747, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_Name
+      value: Enemy Grunt
+      objectReference: {fileID: 0}
+    - target: {fileID: 9054016399113633273, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 63.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 9054016399113633273, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.231
+      objectReference: {fileID: 0}
+    - target: {fileID: 9054016399113633273, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 5.268
+      objectReference: {fileID: 0}
+    - target: {fileID: 9054016399113633273, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9054016399113633273, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9054016399113633273, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9054016399113633273, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9054016399113633273, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9054016399113633273, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9054016399113633273, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c6e0b163edbce904eb1462d6c17cc967, type: 3}
 --- !u!1001 &1931822172464997595
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -53566,3 +53725,4 @@ SceneRoots:
   - {fileID: 9078346982856117563}
   - {fileID: 714264591964327803}
   - {fileID: 7651529541086404435}
+  - {fileID: 1535136659608527847}

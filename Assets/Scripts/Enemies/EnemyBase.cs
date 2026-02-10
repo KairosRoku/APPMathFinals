@@ -40,6 +40,7 @@ public class EnemyBase : MonoBehaviour
     private Color _originalColor;
     private Color _targetStatusColor;
     private bool _isDead = false;
+    public bool ResistanceEnabled = true; // Added this to handle wave-specific resistance rules
 
     private void Start()
     {
@@ -157,8 +158,8 @@ public class EnemyBase : MonoBehaviour
 
         float finalDamage = amount;
 
-        // 50% Damage Reduction if enemy element matches tower element
-        if (IsResistantTo(element))
+        // Resistance handling
+        if (ResistanceEnabled && IsResistantTo(element))
         {
             finalDamage *= 0.5f;
         }
@@ -180,21 +181,22 @@ public class EnemyBase : MonoBehaviour
 
     private bool IsResistantTo(ElementType element)
     {
-        if (Type == EnemyType.Fire)
+        if (Type == EnemyType.Grunt)
         {
             return element == ElementType.Fire || element == ElementType.FireFire || 
                    element == ElementType.FireIce || element == ElementType.FireLightning;
         }
-        if (Type == EnemyType.Ice)
-        {
-            return element == ElementType.Ice || element == ElementType.IceIce || 
-                   element == ElementType.FireIce || element == ElementType.IceLightning;
-        }
-        if (Type == EnemyType.Electric)
+        if (Type == EnemyType.Runner)
         {
             return element == ElementType.Lightning || element == ElementType.LightningLightning || 
                    element == ElementType.FireLightning || element == ElementType.IceLightning;
         }
+        if (Type == EnemyType.Tank)
+        {
+            return element == ElementType.Ice || element == ElementType.IceIce || 
+                   element == ElementType.FireIce || element == ElementType.IceLightning;
+        }
+        // Boss has no resistances
         return false;
     }
 
@@ -254,8 +256,7 @@ public class EnemyBase : MonoBehaviour
 
     public void SetType(EnemyType type)
     {
-        Type = type;
-        ApplyTypeVisuals();
+        ConfigureStats(type);
     }
 
     private void ApplyTypeVisuals()
@@ -264,27 +265,61 @@ public class EnemyBase : MonoBehaviour
         
         switch (Type)
         {
-            case EnemyType.Fire:
-                _originalColor = FireTypeColor;
+            case EnemyType.Grunt:
+                _originalColor = Color.white;
                 break;
-            case EnemyType.Ice:
-                _originalColor = IceTypeColor;
+            case EnemyType.Runner:
+                _originalColor = new Color(0.4f, 1f, 0.4f, 1f); // Green for speed
                 break;
-            case EnemyType.Electric:
-                _originalColor = ElectricTypeColor;
+            case EnemyType.Tank:
+                _originalColor = new Color(0.5f, 0.5f, 0.5f, 1f); // Grey for tank
+                break;
+            case EnemyType.Boss:
+                _originalColor = new Color(1f, 0.2f, 0.8f, 1f); // Pink/Purple for boss
                 break;
             default:
                 _originalColor = Color.white;
                 break;
         }
         
-        // Use property block if possible for better performance, but material.color is fine for now
         EnemyRenderer.material.color = _originalColor;
+    }
+
+    public void ConfigureStats(EnemyType type)
+    {
+        Type = type;
+        switch (type)
+        {
+            case EnemyType.Grunt:
+                MaxHP = 50f;
+                Speed = 4f;
+                CoinValue = 5;
+                break;
+            case EnemyType.Runner:
+                MaxHP = 30f;
+                Speed = 7f;
+                CoinValue = 8;
+                break;
+            case EnemyType.Tank:
+                MaxHP = 200f;
+                Speed = 2.5f;
+                CoinValue = 15;
+                break;
+            case EnemyType.Boss:
+                MaxHP = 1500f;
+                Speed = 2f;
+                CoinValue = 100;
+                break;
+        }
+        _currentHP = MaxHP;
+        _baseSpeed = Speed;
+        ApplyTypeVisuals();
     }
 
     private void ReachEnd()
     {
         GameManager.Instance.ReduceHealth(1);
+        if (WaveManager.Instance != null) WaveManager.Instance.NotifyEnemyDestroyed();
         Destroy(gameObject);
     }
 
@@ -304,6 +339,9 @@ public class EnemyBase : MonoBehaviour
             // Fallback if no prefab, add gold immediately
             GameManager.Instance.AddGold(CoinValue);
         }
+
+        if (WaveManager.Instance != null) WaveManager.Instance.NotifyEnemyDestroyed();
+        
         Destroy(gameObject);
     }
 

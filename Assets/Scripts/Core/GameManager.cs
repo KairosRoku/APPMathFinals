@@ -85,18 +85,4 @@ public class GameManager : MonoBehaviour
         OnGameWon?.Invoke();
         Debug.Log("Victory!");
     }
-
-    public void CheckLevelCompletion(int currentWave, int totalWaves, bool waveInProgress)
-    {
-        if (IsGameOver) return;
-        
-        if (currentWave >= totalWaves && !waveInProgress)
-        {
-            // If all waves are done and no enemies are left, you win!
-            if (FindObjectsByType<EnemyBase>(FindObjectsSortMode.None).Length == 0)
-            {
-                Victory();
-            }
-        }
-    }
 }
