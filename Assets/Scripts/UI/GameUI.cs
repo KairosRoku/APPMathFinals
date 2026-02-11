@@ -10,18 +10,34 @@ public class GameUI : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
+        if (Instance == null) 
+        {
+            Instance = this;
+            Debug.Log("[GameUI] Instance initialized.");
+        }
+        else
+        {
+            Debug.LogWarning("[GameUI] Duplicate Instance found! Destroying this one.");
+            Destroy(this);
+        }
     }
 
     [Header("Text Elements")]
-    [Header("Text Elements")]
     public TextMeshProUGUI GoldText;
-    public TextMeshProUGUI HealthText;
-    public TextMeshProUGUI WaveText;
     public TextMeshProUGUI TimerText;
     
+    [Header("Icons and Bars")]
+    public Image HealthBarFillImage; // The "Full Bar" image
+    public Image GoldIconImage;
+
     [Header("Buttons")]
     public Button StartWaveButton;
+    public GameObject PauseButton;
+    public GameObject ResumeButton;
+
+    [Header("Wave Indicator")]
+    public Image WaveIndicatorImage;
+    public Sprite[] WaveSprites; // Array of 10 sprites for waves 1-10
 
     [Header("Panels")]
     public GameObject PauseMenuPanel;
@@ -31,6 +47,10 @@ public class GameUI : MonoBehaviour
     
     [Header("Effects")]
     public Image DamageVignette;
+
+    private System.Collections.Generic.Stack<GameObject> _panelHistory = new System.Collections.Generic.Stack<GameObject>();
+    private System.Collections.Generic.Dictionary<GameObject, Vector3> _initialScales = new System.Collections.Generic.Dictionary<GameObject, Vector3>();
+    private Coroutine _healthCoroutine;
 
     private void Start()
     {
@@ -44,11 +64,28 @@ public class GameUI : MonoBehaviour
         UpdateGold(GameManager.Instance.CurrentGold);
         UpdateHealth(GameManager.Instance.CurrentHealth);
         
+        // Capture original scales before disabling
+        if (PauseMenuPanel != null) _initialScales[PauseMenuPanel] = PauseMenuPanel.transform.localScale;
+        if (SettingsPanel != null) _initialScales[SettingsPanel] = SettingsPanel.transform.localScale;
+        if (GameOverPanel != null) _initialScales[GameOverPanel] = GameOverPanel.transform.localScale;
+        if (VictoryPanel != null) _initialScales[VictoryPanel] = VictoryPanel.transform.localScale;
+
         if (PauseMenuPanel != null) PauseMenuPanel.SetActive(false);
         if (SettingsPanel != null) SettingsPanel.SetActive(false);
         if (GameOverPanel != null) GameOverPanel.SetActive(false);
         if (VictoryPanel != null) VictoryPanel.SetActive(false);
+        if (ResumeButton != null) ResumeButton.SetActive(false);
+        if (PauseButton != null) PauseButton.SetActive(true);
         
+        // Initialize Wave UI
+        UpdateWave(1);
+        
+        // Check for EventSystem
+        if (UnityEngine.EventSystems.EventSystem.current == null)
+        {
+            Debug.LogError("[GameUI] CRITICAL: No EventSystem found in the scene! UI buttons will not work. Please add one (Right-Click UI -> EventSystem).");
+        }
+
         if (StartWaveButton != null)
         {
             StartWaveButton.onClick.AddListener(() => {
@@ -96,12 +133,40 @@ public class GameUI : MonoBehaviour
 
     private void UpdateHealth(int health)
     {
-        if (HealthText != null) HealthText.text = "HP: " + health;
+        // Update Health Bar Fill with Lerp
+        if (HealthBarFillImage != null && GameManager.Instance != null)
+        {
+            float targetFill = (float)health / GameManager.Instance.StartingHealth;
+            if (_healthCoroutine != null) StopCoroutine(_healthCoroutine);
+            _healthCoroutine = StartCoroutine(AnimateHealthBar(targetFill));
+        }
+    }
+
+    IEnumerator AnimateHealthBar(float targetFill)
+    {
+        float duration = 0.5f;
+        float elapsed = 0f;
+        float startFill = HealthBarFillImage.fillAmount;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            HealthBarFillImage.fillAmount = Mathf.Lerp(startFill, targetFill, elapsed / duration);
+            yield return null;
+        }
+        HealthBarFillImage.fillAmount = targetFill;
     }
 
     public void UpdateWave(int wave)
     {
-        if (WaveText != null) WaveText.text = "Wave: " + wave;
+        // Update sprite if indicator and sprites are assigned
+        if (WaveIndicatorImage != null && WaveSprites != null && WaveSprites.Length > 0)
+        {
+            int index = wave - 1; // wave is 1-indexed
+            if (index >= 0 && index < WaveSprites.Length)
+            {
+                WaveIndicatorImage.sprite = WaveSprites[index];
+            }
+        }
     }
 
     public void UpdateTimer(float time)
@@ -134,13 +199,21 @@ public class GameUI : MonoBehaviour
     
     private void ShowGameOver()
     {
-        if (GameOverPanel != null) GameOverPanel.SetActive(true);
+        if (GameOverPanel != null) 
+        {
+            GameOverPanel.SetActive(true);
+            StartCoroutine(AnimateScaleOpen(GameOverPanel.transform));
+        }
         Time.timeScale = 0; // Pause game on game over
     }
 
     private void ShowVictory() // New method to show victory panel
     {
-        if (VictoryPanel != null) VictoryPanel.SetActive(true);
+        if (VictoryPanel != null) 
+        {
+            VictoryPanel.SetActive(true);
+            StartCoroutine(AnimateScaleOpen(VictoryPanel.transform));
+        }
         Time.timeScale = 0; // Pause game on victory
     }
 
@@ -156,36 +229,76 @@ public class GameUI : MonoBehaviour
     public void Pause()
     {
         Time.timeScale = 0;
+        _panelHistory.Clear(); // Reset history when pausing
         if (PauseMenuPanel != null) 
         {
             PauseMenuPanel.SetActive(true);
             StartCoroutine(AnimateScaleOpen(PauseMenuPanel.transform));
         }
         if (SettingsPanel != null) SettingsPanel.SetActive(false);
+
+        // Toggle buttons
+        if (PauseButton != null) PauseButton.SetActive(false);
+        if (ResumeButton != null) 
+        {
+            ResumeButton.SetActive(true);
+            ResumeButton.transform.SetAsLastSibling(); // Bring to front
+        }
     }
 
     public void Resume()
     {
         Time.timeScale = 1;
+        _panelHistory.Clear();
         if (PauseMenuPanel != null) PauseMenuPanel.SetActive(false);
         if (SettingsPanel != null) SettingsPanel.SetActive(false);
+
+        // Toggle buttons
+        if (PauseButton != null) 
+        {
+            PauseButton.SetActive(true);
+            PauseButton.transform.SetAsLastSibling(); // Bring to front
+        }
+        if (ResumeButton != null) ResumeButton.SetActive(false);
     }
 
     public void OpenSettings()
     {
-        if (SettingsPanel != null) SettingsPanel.SetActive(true);
-        if (PauseMenuPanel != null) PauseMenuPanel.SetActive(false);
+        if (PauseMenuPanel != null && PauseMenuPanel.activeSelf)
+        {
+            _panelHistory.Push(PauseMenuPanel);
+            PauseMenuPanel.SetActive(false);
+        }
+
+        if (SettingsPanel != null) 
+        {
+            SettingsPanel.SetActive(true);
+            StartCoroutine(AnimateScaleOpen(SettingsPanel.transform));
+        }
+    }
+
+    public void GoBack()
+    {
+        if (_panelHistory.Count > 0)
+        {
+            // Hide current active panels
+            if (SettingsPanel != null) SettingsPanel.SetActive(false);
+            
+            // Show previously active panel
+            GameObject previousPanel = _panelHistory.Pop();
+            previousPanel.SetActive(true);
+            StartCoroutine(AnimateScaleOpen(previousPanel.transform));
+        }
+        else
+        {
+            // If no history, just resume or stay in pause
+            Resume();
+        }
     }
 
     public void CloseSettings()
     {
-        if (SettingsPanel != null) SettingsPanel.SetActive(false);
-        if (PauseMenuPanel != null) 
-        {
-            PauseMenuPanel.SetActive(true);
-            // Optionally re-animate or just show
-            PauseMenuPanel.transform.localScale = Vector3.one;
-        }
+        GoBack();
     }
 
     public void BackToMainMenu()
@@ -202,15 +315,21 @@ public class GameUI : MonoBehaviour
     
     IEnumerator AnimateScaleOpen(Transform target)
     {
+        Vector3 targetScale = Vector3.one;
+        if (_initialScales.TryGetValue(target.gameObject, out Vector3 storedScale))
+        {
+            targetScale = storedScale;
+        }
+
         target.localScale = Vector3.zero;
         float t = 0;
         while (t < 0.2f)
         {
              t += Time.unscaledDeltaTime;
-             target.localScale = Vector3.one * Mathf.Lerp(0, 1, t/0.2f);
+             target.localScale = targetScale * Mathf.Lerp(0, 1, t/0.2f);
              yield return null;
         }
-        target.localScale = Vector3.one;
+        target.localScale = targetScale;
     }
 }
 

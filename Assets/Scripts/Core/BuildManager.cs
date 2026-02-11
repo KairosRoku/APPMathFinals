@@ -25,6 +25,11 @@ public class BuildManager : MonoBehaviour
     {
         towerToBuild = tower;
         selectedNode = null;
+        
+        if (tower != null && tower.prefab != null)
+            Debug.Log($"[BuildManager] Selected tower: {tower.prefab.name}");
+        else if (tower == null)
+            Debug.Log("[BuildManager] Tower selection cleared.");
     }
 
     public void SelectNode(Node node)
@@ -46,7 +51,11 @@ public class BuildManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
+        if (Instance == null) 
+        {
+            Instance = this;
+            Debug.Log("[BuildManager] Instance initialized.");
+        }
         
         int ignoreLayer = LayerMask.NameToLayer("Ignore Raycast");
         if (ignoreLayer == -1) ignoreLayer = 2; // Fallback to Layer 2 which is usually Ignore Raycast
@@ -160,14 +169,15 @@ public class BuildManager : MonoBehaviour
                 {
                     if (GameManager.Instance.CurrentGold >= draggedBlueprint.cost) // Fusion cost same as tower placement for now or specific fusion cost
                     {
-                        GameManager.Instance.SpendGold(draggedBlueprint.cost);
+                        GameManager.Instance.SpendGold(draggedBlueprint.cost); // Corrected line
                         FuseTowers(node, fusedPrefab);
+                        return; // Successfully fused, don't build!
                     }
                     else
                     {
-                        Debug.Log("Not enough money for fusion!");
+                        Debug.Log("[BuildManager] Not enough gold for fusion!");
+                        return; // Don't build if we attempted fusion but failed due to gold
                     }
-                    return;
                 }
             }
         }
@@ -202,19 +212,25 @@ public class BuildManager : MonoBehaviour
     {
         if (node == null)
         {
-            Debug.LogError("BuildManager: Node is null!");
+            Debug.LogError("[BuildManager] Build failed: Node is null!");
             return;
         }
 
         if (node.turret != null)
         {
-            Debug.Log("BuildManager: Node already occupied!");
+            Debug.LogWarning("[BuildManager] Cannot build: There is already a turret on this node!");
             return;
         }
 
         if (towerToBuild == null)
         {
-            Debug.LogError("BuildManager: No tower selected to build!");
+            Debug.LogError("[BuildManager] Build failed: No tower selected! Make sure to select a tower from the UI first.");
+            return;
+        }
+
+        if (towerToBuild.prefab == null)
+        {
+            Debug.LogError($"[BuildManager] Build failed: Prefab for {towerToBuild.cost} tower is null! Check your BuildButton assignment.");
             return;
         }
 
@@ -234,9 +250,3 @@ public class BuildManager : MonoBehaviour
     }
 }
 
-[System.Serializable]
-public class TowerBlueprint
-{
-    public GameObject prefab;
-    public int cost;
-}

@@ -35,17 +35,21 @@ public class Node : MonoBehaviour
 
     public void OnClick()
     {
-        // Removed Pointer check as InputManager handles it
         if (turret != null)
         {
+            Debug.Log($"[Node] Node {gameObject.name} is occupied by {turret.name}");
             buildManager.SelectNode(this);
-            // Fusion Integration
             if(FusionManager.Instance != null) FusionManager.Instance.SelectForFusion(this);
             return;
         }
 
-        if (!buildManager.CanBuild) return;
+        if (!buildManager.CanBuild)
+        {
+            Debug.Log("[Node] Cannot build: No tower selected in BuildManager.");
+            return;
+        }
 
+        Debug.Log($"[Node] Attempting to build on {gameObject.name}");
         buildManager.BuildTurretOn(this);
     }
 }

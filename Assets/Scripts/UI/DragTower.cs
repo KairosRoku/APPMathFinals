@@ -27,7 +27,6 @@ public class DragTower : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
              return;
         }
 
-        GameManager.Instance.OnDamageTaken -= null; // Dummy check
 
         BuildManager.Instance.SelectTowerToBuild(Tower);
 
