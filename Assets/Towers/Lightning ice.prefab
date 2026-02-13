@@ -189,7 +189,8 @@ MonoBehaviour:
   ExplosionRadius: 0
   FirePoint: {fileID: 877837460343671537}
   ProjectilePrefab: {fileID: 2706807634985187433, guid: 1c748a301b574104e9556baf8f1467d5, type: 3}
-  ImpactVFXPrefab: {fileID: 1576821277115521978, guid: ae064a26fca851d41baa1ed90cf084c7, type: 3}
+  ImpactVFXPrefab: {fileID: 1576821277115521978, guid: 1900b921a5ac52840ab5eb7e1617a540, type: 3}
+  MuzzleFlashPrefab: {fileID: 4275768951013926448, guid: 45aa320e1bd935142ba2b14671ff6514, type: 3}
   LaserLine: {fileID: 7012868509162129527}
   IcePulseSprite: {fileID: 0}
   BurnDamage: 2
@@ -254,8 +255,8 @@ LineRenderer:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0
-        value: 1
+        time: 0.023903638
+        value: 0.19811064
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -267,7 +268,7 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
+      key0: {r: 0.68580586, g: 0.23113209, b: 1, a: 1}
       key1: {r: 1, g: 1, b: 1, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
@@ -292,11 +293,11 @@ LineRenderer:
       atime6: 0
       atime7: 0
       m_Mode: 0
-      m_ColorSpace: -1
+      m_ColorSpace: 0
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
-    numCornerVertices: 0
-    numCapVertices: 0
+    numCornerVertices: 4
+    numCapVertices: 1
     alignment: 0
     textureMode: 0
     textureScale: {x: 1, y: 1}

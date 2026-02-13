@@ -39,6 +39,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -3444948473325132326, guid: b206f6317ed8bc847b91dc3c43fcef59, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5866884042863305218, guid: b206f6317ed8bc847b91dc3c43fcef59, type: 3}
       propertyPath: m_LocalPosition.x
       value: 45.666565
@@ -84,13 +88,25 @@ PrefabInstance:
       value: FireFire Variant
       objectReference: {fileID: 0}
     - target: {fileID: 7551732772223908457, guid: b206f6317ed8bc847b91dc3c43fcef59, type: 3}
+      propertyPath: Damage
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 7551732772223908457, guid: b206f6317ed8bc847b91dc3c43fcef59, type: 3}
       propertyPath: Element
       value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7551732772223908457, guid: b206f6317ed8bc847b91dc3c43fcef59, type: 3}
+      propertyPath: FireRate
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7551732772223908457, guid: b206f6317ed8bc847b91dc3c43fcef59, type: 3}
       propertyPath: FirePoint
       value: 
       objectReference: {fileID: 3739504816209798959}
+    - target: {fileID: 7551732772223908457, guid: b206f6317ed8bc847b91dc3c43fcef59, type: 3}
+      propertyPath: LaserLine
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 7551732772223908457, guid: b206f6317ed8bc847b91dc3c43fcef59, type: 3}
       propertyPath: IcePulseSprite
       value: 
@@ -98,7 +114,11 @@ PrefabInstance:
     - target: {fileID: 7551732772223908457, guid: b206f6317ed8bc847b91dc3c43fcef59, type: 3}
       propertyPath: ImpactVFXPrefab
       value: 
-      objectReference: {fileID: 1576821277115521978, guid: ae064a26fca851d41baa1ed90cf084c7, type: 3}
+      objectReference: {fileID: 1576821277115521978, guid: 1900b921a5ac52840ab5eb7e1617a540, type: 3}
+    - target: {fileID: 7551732772223908457, guid: b206f6317ed8bc847b91dc3c43fcef59, type: 3}
+      propertyPath: MuzzleFlashPrefab
+      value: 
+      objectReference: {fileID: 4275768951013926448, guid: 45aa320e1bd935142ba2b14671ff6514, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 3457272837520278009, guid: b206f6317ed8bc847b91dc3c43fcef59, type: 3}
@@ -173,7 +193,8 @@ PrefabInstance:
       propertyPath: FirePoint
       value: 
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7551732772223908457, guid: b206f6317ed8bc847b91dc3c43fcef59, type: 3}
     m_RemovedGameObjects:
     - {fileID: 3457272837520278009, guid: b206f6317ed8bc847b91dc3c43fcef59, type: 3}
     m_AddedGameObjects:

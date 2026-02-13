@@ -62,7 +62,7 @@ public class BuildManager : MonoBehaviour
 
         if (SelectionIconPrefab != null)
         {
-            currentSelectionIcon = Instantiate(SelectionIconPrefab);
+            currentSelectionIcon = Instantiate(SelectionIconPrefab, new Vector3(0, 0.2f, 0), Quaternion.identity);
             currentSelectionIcon.layer = ignoreLayer;
             // Also set children
             foreach (Transform child in currentSelectionIcon.GetComponentsInChildren<Transform>()) child.gameObject.layer = ignoreLayer;
@@ -103,7 +103,7 @@ public class BuildManager : MonoBehaviour
         }
 
         if (!currentSelectionIcon.activeSelf) currentSelectionIcon.SetActive(true);
-        currentSelectionIcon.transform.position = node.transform.position + Vector3.up * 0.1f;
+        currentSelectionIcon.transform.position = node.transform.position + Vector3.up * 0.2f;
         
         // Update Range Indicator
         if (currentRangeIndicator != null && towerToBuild != null)
@@ -205,6 +205,8 @@ public class BuildManager : MonoBehaviour
         GameObject newTower = Instantiate(fusedPrefab, node.transform.position, Quaternion.identity);
         node.turret = newTower;
         
+        if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.25f, 0.1f); // Stronger shake for fusion
+        
         Debug.Log("Fusion Successful!");
     }
 
@@ -238,9 +240,19 @@ public class BuildManager : MonoBehaviour
 
         if (GameManager.Instance.SpendGold(towerToBuild.cost))
         {
+            // Spawn Smoke VFX
+            if (SmokeVFXPrefab != null)
+            {
+                GameObject smoke = Instantiate(SmokeVFXPrefab, node.transform.position, Quaternion.identity);
+                Destroy(smoke, 2f);
+            }
+
             GameObject turret = Instantiate(towerToBuild.prefab, node.transform.position, Quaternion.identity);
             node.turret = turret;
             
+            // Screen Shake on build
+            if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.15f, 0.05f);
+
             Debug.Log($"Tower Built at {node.transform.position}!");
         }
         else

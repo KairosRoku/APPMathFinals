@@ -105,3 +105,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Projectile
   Speed: 10
+  ImpactVFXPrefab: {fileID: 1576821277115521978, guid: 1900b921a5ac52840ab5eb7e1617a540, type: 3}
+  TrailPrefab: {fileID: 1576821277115521978, guid: f84de33c21fdeb446b9225e3460ad948, type: 3}
+  TrailSpawnRate: 0.05

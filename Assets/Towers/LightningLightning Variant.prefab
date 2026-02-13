@@ -39,6 +39,34 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3515429758677123386}
     m_Modifications:
+    - target: {fileID: 2043024530386817464, guid: 2f3ad6ffc5cb18b4492532a07c1daad6, type: 3}
+      propertyPath: m_Parameters.numCapVertices
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2043024530386817464, guid: 2f3ad6ffc5cb18b4492532a07c1daad6, type: 3}
+      propertyPath: m_Parameters.numCornerVertices
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2043024530386817464, guid: 2f3ad6ffc5cb18b4492532a07c1daad6, type: 3}
+      propertyPath: m_Parameters.colorGradient.key0.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2043024530386817464, guid: 2f3ad6ffc5cb18b4492532a07c1daad6, type: 3}
+      propertyPath: m_Parameters.colorGradient.key0.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2043024530386817464, guid: 2f3ad6ffc5cb18b4492532a07c1daad6, type: 3}
+      propertyPath: m_Parameters.colorGradient.m_ColorSpace
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2043024530386817464, guid: 2f3ad6ffc5cb18b4492532a07c1daad6, type: 3}
+      propertyPath: m_Parameters.widthCurve.m_Curve.Array.data[0].time
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2043024530386817464, guid: 2f3ad6ffc5cb18b4492532a07c1daad6, type: 3}
+      propertyPath: m_Parameters.widthCurve.m_Curve.Array.data[0].value
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6153993241277352103, guid: 2f3ad6ffc5cb18b4492532a07c1daad6, type: 3}
       propertyPath: m_Name
       value: Lightning Lightning
@@ -113,6 +141,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2043024530386817464, guid: 2f3ad6ffc5cb18b4492532a07c1daad6, type: 3}
+      propertyPath: m_Parameters.widthCurve.m_Curve.Array.data[0].time
+      value: 0.027886182
+      objectReference: {fileID: 0}
+    - target: {fileID: 2043024530386817464, guid: 2f3ad6ffc5cb18b4492532a07c1daad6, type: 3}
+      propertyPath: m_Parameters.widthCurve.m_Curve.Array.data[0].value
+      value: 0.44339567
+      objectReference: {fileID: 0}
     - target: {fileID: 6153993241277352103, guid: 2f3ad6ffc5cb18b4492532a07c1daad6, type: 3}
       propertyPath: m_Name
       value: LightningLightning Variant

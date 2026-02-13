@@ -191,7 +191,8 @@ MonoBehaviour:
   ExplosionRadius: 0
   FirePoint: {fileID: 9093277457435652158}
   ProjectilePrefab: {fileID: 2706807634985187433, guid: 1c748a301b574104e9556baf8f1467d5, type: 3}
-  ImpactVFXPrefab: {fileID: 1576821277115521978, guid: ae064a26fca851d41baa1ed90cf084c7, type: 3}
+  ImpactVFXPrefab: {fileID: 1576821277115521978, guid: 1900b921a5ac52840ab5eb7e1617a540, type: 3}
+  MuzzleFlashPrefab: {fileID: 4275768951013926448, guid: 45aa320e1bd935142ba2b14671ff6514, type: 3}
   LaserLine: {fileID: 5832578374111381759}
   IcePulseSprite: {fileID: 8335178684852899193, guid: 5fb62910b841ab64185244b5573e743c, type: 3}
   BurnDamage: 2

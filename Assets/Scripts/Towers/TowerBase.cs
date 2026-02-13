@@ -15,6 +15,7 @@ public class TowerBase : MonoBehaviour
     public Transform FirePoint;
     public GameObject ProjectilePrefab; // Optional: If projectile based
     public GameObject ImpactVFXPrefab; // For instant hit/AOE effects
+    public GameObject MuzzleFlashPrefab; // NEW: Muzzle flash at fire point
     public LineRenderer LaserLine; // For main Lightning line
     public SpriteRenderer IcePulseSprite; // For Ice AOE visual (optional)
     
@@ -97,6 +98,13 @@ public class TowerBase : MonoBehaviour
 
     private void Shoot()
     {
+        // Muzzle Flash
+        if (MuzzleFlashPrefab != null && FirePoint != null)
+        {
+            GameObject flash = Instantiate(MuzzleFlashPrefab, FirePoint.position, FirePoint.rotation);
+            Destroy(flash, 0.5f);
+        }
+
         // Attack Logic based on Element
         if (Element == ElementType.Lightning || Element == ElementType.LightningLightning || 
             Element == ElementType.FireLightning || Element == ElementType.IceLightning)
@@ -136,6 +144,8 @@ public class TowerBase : MonoBehaviour
              StartCoroutine(AnimateIcePulse());
          }
          
+         if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.1f, 0.03f);
+
          // Slow/Freeze enemies in small radius around tower
          EnemyBase[] allEnemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
          foreach(var enemy in allEnemies)
@@ -170,6 +180,8 @@ public class TowerBase : MonoBehaviour
              }
              StartCoroutine(DisableLaserAfter(0.15f));
         }
+
+        if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.05f, 0.02f);
 
         DealDamage(_target);
         SpawnImpactVFX(_target.transform.position);
@@ -261,24 +273,24 @@ public class TowerBase : MonoBehaviour
             projectile.Seek(_target, Damage, Element, BurnDamage, SlowAmount, SlowDuration);
         }
 
-        // Spreading Logic (DoT only for subsequent)
-        List<EnemyBase> hitEnemies = new List<EnemyBase> { _target };
-        float[] spreadMultipliers = { 0.5f, 0.3f };
-        EnemyBase currentSource = _target;
-
-        foreach (float mult in spreadMultipliers)
+        // AOE Spreading Logic: Hit all "adjacent" enemies in a radius
+        EnemyBase[] allEnemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
+        foreach (EnemyBase enemy in allEnemies)
         {
-            EnemyBase nextTarget = FindNextChainTarget(currentSource, hitEnemies);
-            if (nextTarget == null) break;
+            if (enemy == _target) continue;
 
-            // Apply partial DoT
-            nextTarget.ApplyBurn(BurnDamage * mult, 3f);
-            
-            // Visual for spread (can use a chain line or similar)
-            CreateChainLine(currentSource.transform.position, nextTarget.transform.position);
-
-            hitEnemies.Add(nextTarget);
-            currentSource = nextTarget;
+            float dist = Vector3.Distance(_target.transform.position, enemy.transform.position);
+            if (dist <= 2.5f) // "Adjacent" radius
+            {
+                // Apply immediate damage (50% effectiveness)
+                enemy.TakeDamage(Damage * 0.5f, Element);
+                
+                // Apply spreading fire (50% effectiveness)
+                enemy.ApplyBurn(BurnDamage * 0.5f, 3f);
+                
+                // Visual for spread
+                CreateChainLine(_target.transform.position, enemy.transform.position);
+            }
         }
     }
 
@@ -333,10 +345,12 @@ public class TowerBase : MonoBehaviour
         
         // Copy settings from main laser line
         chainLine.material = LaserLine.material;
-        chainLine.startWidth = LaserLine.startWidth * 0.7f; // Slightly thinner for chains
+        chainLine.startWidth = LaserLine.startWidth * 0.7f;
         chainLine.endWidth = LaserLine.endWidth * 0.7f;
-        chainLine.startColor = LaserLine.startColor;
-        chainLine.endColor = LaserLine.endColor;
+        
+        // Use the full gradient from the source
+        chainLine.colorGradient = LaserLine.colorGradient;
+        
         chainLine.positionCount = 2;
         chainLine.useWorldSpace = true;
         
