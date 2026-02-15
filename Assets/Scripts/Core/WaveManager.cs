@@ -57,19 +57,21 @@ public class WaveManager : MonoBehaviour
 
     private void Start()
     {
-        _nextWaveTimer = AutoStartThreshold;
+        _nextWaveTimer = 5f; // First wave starts automatically in 5s if not clicked
     }
 
     private void Update()
     {
         if (_waveInProgress || Waves == null || waveIndex >= Waves.Length) 
         {
-            if (GameUI.Instance != null) GameUI.Instance.UpdateTimer(0);
             return;
         }
 
         _nextWaveTimer -= Time.deltaTime;
-        if (GameUI.Instance != null) GameUI.Instance.UpdateTimer(_nextWaveTimer);
+        if (GameUI.Instance != null) 
+        {
+            GameUI.Instance.UpdateCountdown(_nextWaveTimer);
+        }
 
         if (_nextWaveTimer <= 0)
         {
@@ -88,7 +90,11 @@ public class WaveManager : MonoBehaviour
         _waveInProgress = true;
         Wave currentWave = Waves[waveIndex];
         
-        if (GameUI.Instance != null) GameUI.Instance.UpdateWave(waveIndex + 1);
+        if (GameUI.Instance != null) 
+        {
+            GameUI.Instance.UpdateWave(waveIndex + 1);
+            GameUI.Instance.ShowGo();
+        }
 
         foreach (var batch in currentWave.batches)
         {

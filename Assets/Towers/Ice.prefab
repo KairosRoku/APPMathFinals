@@ -212,8 +212,8 @@ MonoBehaviour:
   LaserLine: {fileID: 0}
   IcePulseSprite: {fileID: 483411362830212231}
   BurnDamage: 0
-  SlowAmount: 1
-  SlowDuration: 1
+  SlowAmount: 0.5
+  SlowDuration: 1.2
 --- !u!1001 &8438035724551410174
 PrefabInstance:
   m_ObjectHideFlags: 0

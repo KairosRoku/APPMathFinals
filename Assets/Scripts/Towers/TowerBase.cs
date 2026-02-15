@@ -32,6 +32,16 @@ public class TowerBase : MonoBehaviour
     private void Start()
     {
         if (LaserLine != null) _mainBoltJitter = LaserLine.GetComponent<LightningBoltJitter>();
+
+        // Override stats based on element
+        if (Element == ElementType.Ice)
+        {
+            FireRate = 1.0f; // Attack every 1 second
+        }
+        else if (Element == ElementType.IceIce)
+        {
+            FireRate = 0.5f; // Attack every 2 seconds
+        }
     }
 
     private void Update()
@@ -146,7 +156,7 @@ public class TowerBase : MonoBehaviour
          
          if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.1f, 0.03f);
 
-         // Slow/Freeze enemies in small radius around tower
+         // Slow/Freeze enemies in radius around tower
          EnemyBase[] allEnemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
          foreach(var enemy in allEnemies)
          {
@@ -154,11 +164,14 @@ public class TowerBase : MonoBehaviour
              {
                  if (Element == ElementType.IceIce)
                  {
-                     enemy.ApplySlow(1f, SlowDuration); // 100% slow for duration
+                     // Stun: 100% slow for 1.5 seconds (shorter than the 2s cooldown)
+                     enemy.ApplySlow(1f, 1.5f); 
+                     Debug.Log($"[Tower] {gameObject.name} (IceIce) applied STUN to {enemy.name}");
                  }
                  else
                  {
-                     enemy.ApplySlow(SlowAmount, SlowDuration);
+                     // Regular Slow: Apply configured slow for 1.2 seconds (longer than the 1s cooldown)
+                     enemy.ApplySlow(SlowAmount, 1.2f);
                  }
                  enemy.TakeDamage(Damage, Element); 
              }

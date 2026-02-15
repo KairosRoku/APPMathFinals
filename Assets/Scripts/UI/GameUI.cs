@@ -24,7 +24,7 @@ public class GameUI : MonoBehaviour
 
     [Header("Text Elements")]
     public TextMeshProUGUI GoldText;
-    public TextMeshProUGUI TimerText;
+    public TextMeshProUGUI CountdownText;
     
     [Header("Icons and Bars")]
     public Image HealthBarFillImage; // The "Full Bar" image
@@ -51,6 +51,8 @@ public class GameUI : MonoBehaviour
     private System.Collections.Generic.Stack<GameObject> _panelHistory = new System.Collections.Generic.Stack<GameObject>();
     private System.Collections.Generic.Dictionary<GameObject, Vector3> _initialScales = new System.Collections.Generic.Dictionary<GameObject, Vector3>();
     private Coroutine _healthCoroutine;
+    private Color _originalCountdownColor;
+    private Vector3 _originalCountdownScale;
 
     private void Start()
     {
@@ -84,6 +86,24 @@ public class GameUI : MonoBehaviour
         if (UnityEngine.EventSystems.EventSystem.current == null)
         {
             Debug.LogError("[GameUI] CRITICAL: No EventSystem found in the scene! UI buttons will not work. Please add one (Right-Click UI -> EventSystem).");
+        }
+
+        if (CountdownText != null)
+        {
+            _originalCountdownColor = CountdownText.color;
+            _originalCountdownScale = CountdownText.transform.localScale;
+            CountdownText.text = ""; // Ensure it's empty at start
+            
+            // Force Centering
+            CountdownText.alignment = TextAlignmentOptions.Center;
+            RectTransform rect = CountdownText.GetComponent<RectTransform>();
+            if (rect != null)
+            {
+                rect.anchorMin = new Vector2(0.5f, 0.5f);
+                rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.anchoredPosition = Vector2.zero;
+            }
         }
 
         if (StartWaveButton != null)
@@ -169,11 +189,72 @@ public class GameUI : MonoBehaviour
         }
     }
 
-    public void UpdateTimer(float time)
+
+    private int _lastCountdownValue = -1;
+
+    public void UpdateCountdown(float timeLeft)
     {
-        if (TimerText == null) return;
-        if (time <= 0) { TimerText.text = ""; return; }
-        TimerText.text = "Next Wave in: " + Mathf.CeilToInt(time) + "s";
+        if (CountdownText == null) return;
+
+        // Only show 3, 2, 1
+        if (timeLeft > 0.1f && timeLeft <= 3.5f)
+        {
+            int currentVal = Mathf.CeilToInt(timeLeft);
+            if (currentVal != _lastCountdownValue)
+            {
+                _lastCountdownValue = currentVal;
+                CountdownText.text = currentVal.ToString();
+                CountdownText.color = _originalCountdownColor;
+                StartCoroutine(PopText(CountdownText.transform, 1.2f));
+            }
+        }
+        else if (timeLeft > 3.5f || timeLeft <= 0)
+        {
+            if (timeLeft > 3.5f) CountdownText.text = "";
+            _lastCountdownValue = -1;
+        }
+    }
+
+    public void ShowGo()
+    {
+        if (CountdownText == null) return;
+        CountdownText.text = "GO!";
+        CountdownText.color = new Color(0.1f, 1f, 0.1f); // Greenish
+        StartCoroutine(PopText(CountdownText.transform, 1.5f));
+        StartCoroutine(FadeOutText(CountdownText, 1f));
+    }
+
+    IEnumerator PopText(Transform target, float scaleMult = 1.2f)
+    {
+        Vector3 baseScale = _originalCountdownScale;
+        target.localScale = baseScale * scaleMult;
+        float elapsed = 0;
+        float duration = 0.2f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            target.localScale = Vector3.Lerp(baseScale * scaleMult, baseScale, elapsed / duration);
+            yield return null;
+        }
+        target.localScale = baseScale;
+    }
+
+    IEnumerator FadeOutText(TextMeshProUGUI text, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        float duration = 0.5f;
+        float elapsed = 0;
+        Color baseColor = _originalCountdownColor;
+        Color c = text.color;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            c.a = Mathf.Lerp(1, 0, elapsed / duration);
+            text.color = c;
+            yield return null;
+        }
+        text.text = "";
+        text.color = baseColor; // Reset alpha for next use
     }
 
     private void PlayDamageEffect()
