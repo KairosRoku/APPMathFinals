@@ -346,6 +346,7 @@ public class EnemyBase : MonoBehaviour
         if (_animator != null && !_isDead)
         {
             _animator.Play(AnimationState.Hurt, false);
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("EnemyHurt", 0.5f);
             Invoke("ResumeWalk", 0.5f); 
         }
 
@@ -511,6 +512,7 @@ public class EnemyBase : MonoBehaviour
             _animator.Play(AnimationState.Die, false, () => {
                 Destroy(gameObject);
             });
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("EnemyDie", 0.6f);
         }
         else
         {

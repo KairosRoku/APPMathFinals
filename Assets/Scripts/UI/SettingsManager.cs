@@ -30,26 +30,37 @@ public class SettingsManager : MonoBehaviour
     private void Start()
     {
         LoadSettings();
+
+        // Add Listeners if sliders are assigned
+        if (MasterVolumeSlider != null) MasterVolumeSlider.onValueChanged.AddListener(SetMasterVolume);
+        if (MusicVolumeSlider != null) MusicVolumeSlider.onValueChanged.AddListener(SetMusicVolume);
+        if (SFXVolumeSlider != null) SFXVolumeSlider.onValueChanged.AddListener(SetSFXVolume);
     }
 
     public void SetMasterVolume(float volume)
     {
-        if (MasterMixer != null) 
-            MasterMixer.SetFloat("MasterVol", Mathf.Log10(volume) * 20);
+        float db = Mathf.Log10(Mathf.Max(0.0001f, volume)) * 20f;
+        if (MasterMixer != null) MasterMixer.SetFloat("MasterVol", db);
+        if (AudioManager.Instance != null) AudioManager.Instance.SetMasterVolume(volume);
+        
         PlayerPrefs.SetFloat("MasterVol", volume);
     }
 
     public void SetMusicVolume(float volume)
     {
-        if (MasterMixer != null)
-            MasterMixer.SetFloat("MusicVol", Mathf.Log10(volume) * 20);
+        float db = Mathf.Log10(Mathf.Max(0.0001f, volume)) * 20f;
+        if (MasterMixer != null) MasterMixer.SetFloat("MusicVol", db);
+        if (AudioManager.Instance != null) AudioManager.Instance.SetMusicVolume(volume);
+
         PlayerPrefs.SetFloat("MusicVol", volume);
     }
 
     public void SetSFXVolume(float volume)
     {
-        if (MasterMixer != null)
-            MasterMixer.SetFloat("SFXVol", Mathf.Log10(volume) * 20);
+        float db = Mathf.Log10(Mathf.Max(0.0001f, volume)) * 20f;
+        if (MasterMixer != null) MasterMixer.SetFloat("SFXVol", db);
+        if (AudioManager.Instance != null) AudioManager.Instance.SetSFXVolume(volume);
+
         PlayerPrefs.SetFloat("SFXVol", volume);
     }
 

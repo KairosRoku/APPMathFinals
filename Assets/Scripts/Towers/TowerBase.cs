@@ -118,12 +118,17 @@ public class TowerBase : MonoBehaviour
             Destroy(flash, 0.5f);
         }
 
+<<<<<<< Updated upstream
         // Play SFX
         if (ShootSFX != null && AudioManager.Instance != null)
         {
             AudioManager.Instance.PlaySFX(ShootSFX);
         }
 
+=======
+        // SFX: Basic shoot sound
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("Shoot", 0.7f);
+>>>>>>> Stashed changes
 
         // Attack Logic based on Element
         if (Element == ElementType.Lightning || Element == ElementType.LightningLightning || 
@@ -164,6 +169,8 @@ public class TowerBase : MonoBehaviour
              StartCoroutine(AnimateIcePulse());
          }
          
+         if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("IcePulse", 0.8f);
+
          if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.1f, 0.03f);
 
          // Slow/Freeze enemies in radius around tower
@@ -206,6 +213,8 @@ public class TowerBase : MonoBehaviour
         }
 
         if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.05f, 0.02f);
+
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("LightningBolt", 0.6f);
 
         DealDamage(_target);
         SpawnImpactVFX(_target.transform.position);

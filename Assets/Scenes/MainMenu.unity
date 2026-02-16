@@ -1649,6 +1649,7 @@ GameObject:
   m_Component:
   - component: {fileID: 927715302}
   - component: {fileID: 927715301}
+  - component: {fileID: 927715303}
   m_Layer: 0
   m_Name: UiManager
   m_TagString: Untagged
@@ -1686,6 +1687,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &927715303
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 927715300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de056f24731189347a1f7e5aaa591e11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SettingsManager
+  MasterMixer: {fileID: 24100000, guid: 24142c587292e124c84a7843bdac2b53, type: 2}
+  MasterVolumeSlider: {fileID: 387480248}
+  MusicVolumeSlider: {fileID: 1716080185}
+  SFXVolumeSlider: {fileID: 224212907}
 --- !u!1 &1012715804
 GameObject:
   m_ObjectHideFlags: 0
