@@ -11,8 +11,8 @@ public class EnemyBase : MonoBehaviour
     public EnemyType Type;
 
     [Header("References")]
-    public Renderer EnemyRenderer; // Can be SpriteRenderer (2D) or MeshRenderer (3D)
-    public Slider HealthBar; // Changed from Scrollbar to Slider
+    public Renderer EnemyRenderer; 
+    public Slider HealthBar; 
     public GameObject CoinPrefab;
     public GameObject DamagePopupPrefab;
 
@@ -22,8 +22,8 @@ public class EnemyBase : MonoBehaviour
     private float _baseSpeed;
     
     [Header("Status Visuals")]
-    public GameObject FreezeOverlay; // Show an ice block or frost sprite
-    public GameObject ShockOverlay;  // Show sparks or electricity sprite
+    public GameObject FreezeOverlay; 
+    public GameObject ShockOverlay;  
     public Color FreezeColor = new Color(0.5f, 0.8f, 1f, 1f);
     public Color BurnColor = new Color(1f, 0.5f, 0.3f, 1f);
     public Color FireTypeColor = new Color(1f, 0.4f, 0.4f);
@@ -40,16 +40,39 @@ public class EnemyBase : MonoBehaviour
     private Color _originalColor;
     private Color _targetStatusColor;
     private bool _isDead = false;
-    public bool ResistanceEnabled = true; // Added this to handle wave-specific resistance rules
+    public bool ResistanceEnabled = true; 
+    public bool IsDead => _isDead;
+
+    private EnemyAnimator _animator;
 
     private void Start()
     {
         _currentHP = MaxHP;
         _baseSpeed = Speed;
+        
+        if(EnemyRenderer == null) EnemyRenderer = GetComponentInChildren<SpriteRenderer>();
+        
         if(EnemyRenderer != null) 
         {
             _originalColor = EnemyRenderer.material.color;
             ApplyTypeVisuals();
+            
+            if (EnemyRenderer is SpriteRenderer)
+            {
+                MeshRenderer mr = GetComponentInChildren<MeshRenderer>();
+                if (mr != null) mr.enabled = false;
+            }
+            
+            _animator = gameObject.GetComponent<EnemyAnimator>();
+            if (_animator == null) _animator = gameObject.AddComponent<EnemyAnimator>();
+            
+            int monsterID = GetMonsterID();
+            _animator.Init(monsterID, EnemyRenderer as SpriteRenderer);
+        }
+        else
+        {
+            MeshRenderer mr = GetComponentInChildren<MeshRenderer>();
+            if (mr != null) EnemyRenderer = mr;
         }
 
         if (PathController.Instance != null)
@@ -60,6 +83,18 @@ public class EnemyBase : MonoBehaviour
                 transform.position = _waypoints[0].position;
                 _targetWaypointIndex = 1;
             }
+        }
+    }
+
+    private int GetMonsterID()
+    {
+        switch (Type)
+        {
+            case EnemyType.Grunt: return 1;
+            case EnemyType.Runner: return 2;
+            case EnemyType.Tank: return 3;
+            case EnemyType.Boss: return 4;
+            default: return 1;
         }
     }
 
@@ -75,6 +110,7 @@ public class EnemyBase : MonoBehaviour
 
     private void HandleMovement()
     {
+        if (_isDead) return;
         if (_waypoints == null || _waypoints.Length == 0) return;
         if (PathController.Instance == null) return;
 
@@ -114,10 +150,8 @@ public class EnemyBase : MonoBehaviour
 
     private void HandleQuadraticMovement()
     {
-        // Segments are 0-1-2, 2-3-4...
         if (_segmentStartIndex + 2 >= _waypoints.Length)
         {
-            // If we can't form a quadratic segment, move linearly to the end if any points left
             if (_segmentStartIndex + 1 < _waypoints.Length)
             {
                 _targetWaypointIndex = _segmentStartIndex + 1;
@@ -134,7 +168,6 @@ public class EnemyBase : MonoBehaviour
         Vector3 p1 = _waypoints[_segmentStartIndex + 1].position;
         Vector3 p2 = _waypoints[_segmentStartIndex + 2].position;
 
-        // Approximate length of the segment if not already set
         if (_segmentT == 0)
         {
             _segmentLength = BezierUtils.GetQuadraticLength(p0, p1, p2);
@@ -158,10 +191,8 @@ public class EnemyBase : MonoBehaviour
 
     private void HandleCubicMovement()
     {
-        // Segments are 0-1-2-3, 3-4-5-6...
         if (_segmentStartIndex + 3 >= _waypoints.Length)
         {
-            // Fallback to linear for remaining points
             if (_segmentStartIndex + 1 < _waypoints.Length)
             {
                 _targetWaypointIndex = _segmentStartIndex + 1;
@@ -204,7 +235,6 @@ public class EnemyBase : MonoBehaviour
     {
         _targetStatusColor = _originalColor;
 
-        // Slow / Freeze Visuals
         if (_slowTimer > 0)
         {
             _slowTimer -= Time.deltaTime;
@@ -217,7 +247,6 @@ public class EnemyBase : MonoBehaviour
             }
         }
 
-        // Burn Visuals
         if (_burnTimer > 0)
         {
             _burnTimer -= Time.deltaTime;
@@ -230,7 +259,6 @@ public class EnemyBase : MonoBehaviour
             }
         }
 
-        // Shock Visuals
         if (_shockTimer > 0)
         {
             _shockTimer -= Time.deltaTime;
@@ -241,7 +269,6 @@ public class EnemyBase : MonoBehaviour
             }
         }
 
-        // Apply constant color tint based on status
         if (_currentHP > 0 && EnemyRenderer != null)
         {
             EnemyRenderer.material.color = Color.Lerp(EnemyRenderer.material.color, _targetStatusColor, Time.deltaTime * 5f);
@@ -271,7 +298,6 @@ public class EnemyBase : MonoBehaviour
 
         float finalDamage = amount;
 
-        // Resistance handling
         if (ResistanceEnabled && IsResistantTo(element))
         {
             finalDamage *= 0.5f;
@@ -279,17 +305,26 @@ public class EnemyBase : MonoBehaviour
 
         _currentHP -= finalDamage;
         
-        // Spawn Damage Popup
         SpawnDamagePopup(finalDamage, element);
 
-        // Visual Feedback
         StartCoroutine(FlashColor());
         StartCoroutine(UpdateHealthUI());
+        
+        if (_animator != null && !_isDead)
+        {
+            _animator.Play(AnimationState.Hurt, false);
+            Invoke("ResumeWalk", 0.5f); 
+        }
 
         if (_currentHP <= 0)
         {
             Die();
         }
+    }
+
+    private void ResumeWalk()
+    {
+        if (!_isDead && _animator != null) _animator.Play(AnimationState.Walk);
     }
 
     private bool IsResistantTo(ElementType element)
@@ -309,7 +344,6 @@ public class EnemyBase : MonoBehaviour
             return element == ElementType.Ice || element == ElementType.IceIce || 
                    element == ElementType.FireIce || element == ElementType.IceLightning;
         }
-        // Boss has no resistances
         return false;
     }
 
@@ -317,18 +351,14 @@ public class EnemyBase : MonoBehaviour
     {
         if (DamagePopupPrefab == null || HealthBar == null) return;
 
-        // Get the World Canvas (it's the parent of the HealthBar slider)
         Canvas worldCanvas = HealthBar.GetComponentInParent<Canvas>();
         if (worldCanvas == null) return;
 
         GameObject popupGO = Instantiate(DamagePopupPrefab, worldCanvas.transform);
         
-        // Since it's in a World Canvas, we might want it slightly offset from the bar
-        // RectTransform of the popup should be reset/configured
         RectTransform rt = popupGO.GetComponent<RectTransform>();
         if(rt != null)
         {
-            // Randomize spawn position to spread them out
             Vector2 randomOffset = new Vector2(Random.Range(-40f, 40f), Random.Range(-20f, 20f));
             rt.anchoredPosition = (Vector2.up * 50f) + randomOffset; 
             rt.localScale = Vector3.one;
@@ -441,6 +471,19 @@ public class EnemyBase : MonoBehaviour
         if (_isDead) return;
         _isDead = true;
 
+        if (HealthBar != null) HealthBar.gameObject.SetActive(false); 
+
+        if (_animator != null)
+        {
+            _animator.Play(AnimationState.Die, false, () => {
+                Destroy(gameObject);
+            });
+        }
+        else
+        {
+            Destroy(gameObject); 
+        }
+
         if (CoinPrefab != null)
         {
             GameObject coin = Instantiate(CoinPrefab, transform.position, Quaternion.identity);
@@ -449,16 +492,16 @@ public class EnemyBase : MonoBehaviour
         }
         else
         {
-            // Fallback if no prefab, add gold immediately
-            GameManager.Instance.AddGold(CoinValue);
+            if (GameManager.Instance != null) GameManager.Instance.AddGold(CoinValue);
         }
 
         if (WaveManager.Instance != null) WaveManager.Instance.NotifyEnemyDestroyed();
-        
-        Destroy(gameObject);
     }
 
-    // Shader-based Flash Feedback
+    private void OnDestroy()
+    {
+    }
+
     private static readonly int FlashAmountID = Shader.PropertyToID("_FlashAmount");
     private static readonly int FlashColorID = Shader.PropertyToID("_FlashColor");
 
@@ -470,10 +513,8 @@ public class EnemyBase : MonoBehaviour
         float t = 0;
         float duration = 0.2f;
 
-        // Set flash color to red
         mat.SetColor(FlashColorID, Color.red);
 
-        // Flash On
         while (t < 1f)
         {
             t += Time.deltaTime / (duration / 2);
@@ -482,7 +523,6 @@ public class EnemyBase : MonoBehaviour
         }
         
         t = 0;
-        // Flash Off
         while (t < 1f)
         {
             t += Time.deltaTime / (duration / 2);
@@ -492,7 +532,6 @@ public class EnemyBase : MonoBehaviour
         mat.SetFloat(FlashAmountID, 0);
     }
 
-    // Lerp Health Bar
     private IEnumerator UpdateHealthUI()
     {
         if (HealthBar == null) yield break;

@@ -46,7 +46,7 @@ public class TowerBase : MonoBehaviour
 
     private void Update()
     {
-        if (_target == null || IsTargetOutOfRange())
+        if (_target == null || IsTargetOutOfRange() || _target.IsDead)
         {
             UpdateTarget();
         }
@@ -82,6 +82,7 @@ public class TowerBase : MonoBehaviour
 
         foreach (EnemyBase enemy in enemies)
         {
+            if (enemy.IsDead) continue;
             float distanceToEnemy = Vector3.Distance(transform.position, enemy.transform.position);
             if (distanceToEnemy < shortestDistance)
             {
@@ -160,6 +161,7 @@ public class TowerBase : MonoBehaviour
          EnemyBase[] allEnemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
          foreach(var enemy in allEnemies)
          {
+             if(enemy.IsDead) continue;
              if(Vector3.Distance(transform.position, enemy.transform.position) <= Range)
              {
                  if (Element == ElementType.IceIce)
@@ -241,7 +243,7 @@ public class TowerBase : MonoBehaviour
 
         foreach (EnemyBase enemy in allEnemies)
         {
-            if (alreadyHit.Contains(enemy)) continue;
+            if (enemy.IsDead || alreadyHit.Contains(enemy)) continue;
 
             float dist = Vector3.Distance(source.transform.position, enemy.transform.position);
             if (dist <= 4f && dist < shortestDist) // 4f bounce range
@@ -262,6 +264,7 @@ public class TowerBase : MonoBehaviour
             EnemyBase[] allEnemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
             foreach (EnemyBase enemy in allEnemies)
             {
+                if (enemy.IsDead) continue;
                 if (Vector3.Distance(lastEnemy.transform.position, enemy.transform.position) <= 2f) // Arbitrary AOE radius
                 {
                     enemy.TakeDamage(Damage * 0.5f, Element);
@@ -290,7 +293,7 @@ public class TowerBase : MonoBehaviour
         EnemyBase[] allEnemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
         foreach (EnemyBase enemy in allEnemies)
         {
-            if (enemy == _target) continue;
+            if (enemy == _target || enemy.IsDead) continue;
 
             float dist = Vector3.Distance(_target.transform.position, enemy.transform.position);
             if (dist <= 2.5f) // "Adjacent" radius
