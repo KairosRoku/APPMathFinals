@@ -1,19 +1,5 @@
 using UnityEngine;
 using UnityEngine.Audio;
-<<<<<<< Updated upstream
-
-public class AudioManager : MonoBehaviour
-{
-    public static AudioManager Instance;
-
-    [Header("Audio Source")]
-    public AudioSource SFXSource;
-    public AudioSource MusicSource;
-
-    [Header("Mixer Groups")]
-    public AudioMixerGroup SFXGroup;
-    public AudioMixerGroup MusicGroup;
-=======
 using System.Collections.Generic;
 
 public class AudioManager : MonoBehaviour
@@ -31,7 +17,6 @@ public class AudioManager : MonoBehaviour
     public AudioSource SFXSource; // General SFX source for UI or non-positional sounds
 
     private Dictionary<string, AudioClip> _audioClips = new Dictionary<string, AudioClip>();
->>>>>>> Stashed changes
 
     private void Awake()
     {
@@ -39,11 +24,7 @@ public class AudioManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-<<<<<<< Updated upstream
-            InitializeSources();
-=======
             LoadClips();
->>>>>>> Stashed changes
         }
         else
         {
@@ -51,46 +32,6 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-<<<<<<< Updated upstream
-    private void InitializeSources()
-    {
-        if (SFXSource == null)
-        {
-            SFXSource = gameObject.AddComponent<AudioSource>();
-            SFXSource.outputAudioMixerGroup = SFXGroup;
-        }
-
-        if (MusicSource == null)
-        {
-            MusicSource = gameObject.AddComponent<AudioSource>();
-            MusicSource.outputAudioMixerGroup = MusicGroup;
-            MusicSource.loop = true;
-        }
-    }
-
-    public void PlaySFX(AudioClip clip, float volume = 1f, float pitch = 1f)
-    {
-        if (clip == null) return;
-
-        // One-shot is better for overlapping sounds like tower fire
-        SFXSource.pitch = pitch;
-        SFXSource.PlayOneShot(clip, volume);
-    }
-
-    public void PlayButtonSound(AudioClip clip)
-    {
-        PlaySFX(clip, 1f, 1f);
-    }
-
-    public void PlayMusic(AudioClip clip, float volume = 0.5f)
-    {
-        if (clip == null || MusicSource.clip == clip) return;
-
-        MusicSource.clip = clip;
-        MusicSource.volume = volume;
-        MusicSource.Play();
-    }
-=======
     private void LoadClips()
     {
         // Auto-load all clips from Resources/Audio
@@ -117,9 +58,16 @@ public class AudioManager : MonoBehaviour
         if (SFXSource == null) return;
         if (!_audioClips.ContainsKey(clipName)) return;
 
+        PlaySFX(_audioClips[clipName], volumeScale, pitchRandomness);
+    }
+
+    public void PlaySFX(AudioClip clip, float volumeScale = 1f, float pitchRandomness = 0.1f)
+    {
+        if (SFXSource == null || clip == null) return;
+
         // Apply slight pitch randomization for variety
         SFXSource.pitch = 1f + Random.Range(-pitchRandomness, pitchRandomness);
-        SFXSource.PlayOneShot(_audioClips[clipName], volumeScale);
+        SFXSource.PlayOneShot(clip, volumeScale);
     }
 
     // Volume Control methods (0.0001 to 1.0)
@@ -145,5 +93,4 @@ public class AudioManager : MonoBehaviour
         float db = Mathf.Log10(Mathf.Max(0.0001f, volume)) * 20f;
         MainMixer.SetFloat(parameter, db);
     }
->>>>>>> Stashed changes
 }

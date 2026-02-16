@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Audio;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -118,17 +119,8 @@ public class TowerBase : MonoBehaviour
             Destroy(flash, 0.5f);
         }
 
-<<<<<<< Updated upstream
-        // Play SFX
-        if (ShootSFX != null && AudioManager.Instance != null)
-        {
-            AudioManager.Instance.PlaySFX(ShootSFX);
-        }
-
-=======
         // SFX: Basic shoot sound
         if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("Shoot", 0.7f);
->>>>>>> Stashed changes
 
         // Attack Logic based on Element
         if (Element == ElementType.Lightning || Element == ElementType.LightningLightning || 
