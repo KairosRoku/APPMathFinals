@@ -18,6 +18,8 @@ public class TowerBase : MonoBehaviour
     public GameObject MuzzleFlashPrefab; // NEW: Muzzle flash at fire point
     public LineRenderer LaserLine; // For main Lightning line
     public SpriteRenderer IcePulseSprite; // For Ice AOE visual (optional)
+    public AudioClip ShootSFX; // SFX for shooting
+
     
     // Status Effect Stats
     public float BurnDamage = 2f;
@@ -115,6 +117,13 @@ public class TowerBase : MonoBehaviour
             GameObject flash = Instantiate(MuzzleFlashPrefab, FirePoint.position, FirePoint.rotation);
             Destroy(flash, 0.5f);
         }
+
+        // Play SFX
+        if (ShootSFX != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX(ShootSFX);
+        }
+
 
         // Attack Logic based on Element
         if (Element == ElementType.Lightning || Element == ElementType.LightningLightning || 

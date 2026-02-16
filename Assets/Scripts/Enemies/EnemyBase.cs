@@ -42,6 +42,8 @@ public class EnemyBase : MonoBehaviour
     private bool _isDead = false;
     public bool ResistanceEnabled = true; 
     public bool IsDead => _isDead;
+    private Vector3 _lastPosition;
+
 
     private EnemyAnimator _animator;
 
@@ -100,8 +102,39 @@ public class EnemyBase : MonoBehaviour
 
     private void Update()
     {
+        _lastPosition = transform.position;
         HandleMovement();
         HandleStatusEffects();
+        UpdateFacing();
+    }
+
+    private void UpdateFacing()
+    {
+        if (_isDead) return;
+
+        float moveDelta = transform.position.x - _lastPosition.x;
+        
+        // Ignore very small movements (precision issues)
+        if (Mathf.Abs(moveDelta) > 0.001f)
+        {
+            // Face right if moving right, left if moving left
+            // We flip the entire transform to ensure all child objects (like health bars) face correctly
+            // OR we just flip the renderer. Flipping the renderer is safer for UI.
+            
+            if (EnemyRenderer is SpriteRenderer sr)
+            {
+                sr.flipX = moveDelta < 0;
+            }
+            else
+            {
+                // For 3D or non-sprite, we can use rotation or scale
+                // But since user specified "left and right only", simple flip is best
+                Vector3 scale = transform.localScale;
+                if (moveDelta < 0 && scale.x > 0) scale.x *= -1;
+                else if (moveDelta > 0 && scale.x < 0) scale.x *= -1;
+                transform.localScale = scale;
+            }
+        }
     }
 
     private float _segmentT = 0f;

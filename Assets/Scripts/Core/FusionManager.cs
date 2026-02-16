@@ -6,7 +6,9 @@ public class FusionManager : MonoBehaviour
     public static FusionManager Instance;
 
     public Button FusionButton;
+    public AudioClip FusionSFX;
     private Node _nodeA;
+
     private Node _nodeB;
 
     [System.Serializable]
@@ -120,6 +122,12 @@ public class FusionManager : MonoBehaviour
              GameObject newTower = Instantiate(prefab, _nodeB.transform.position, Quaternion.identity);
              _nodeB.turret = newTower;
              
+             // Play SFX
+             if (FusionSFX != null && AudioManager.Instance != null)
+             {
+                 AudioManager.Instance.PlaySFX(FusionSFX);
+             }
+
             // Reset Selection
             _nodeA = null;
             _nodeB = null;

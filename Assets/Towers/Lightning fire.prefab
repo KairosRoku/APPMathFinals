@@ -190,6 +190,7 @@ MonoBehaviour:
   MuzzleFlashPrefab: {fileID: 4275768951013926448, guid: 45aa320e1bd935142ba2b14671ff6514, type: 3}
   LaserLine: {fileID: 2043024530386817464}
   IcePulseSprite: {fileID: 0}
+  ShootSFX: {fileID: 8300000, guid: 4509efaac5bec24429551e490e8b314f, type: 3}
   BurnDamage: 2
   SlowAmount: 0.3
   SlowDuration: 2
