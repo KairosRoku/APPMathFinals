@@ -10604,6 +10604,8 @@ MonoBehaviour:
   StartWaveButton: {fileID: 1854248133}
   PauseButton: {fileID: 1567225675}
   ResumeButton: {fileID: 1569564012}
+  RestartButtons: []
+  HomeButtons: []
   WaveIndicatorImage: {fileID: 1039985565}
   WaveSprites:
   - {fileID: 21300000, guid: 6ef5955f432101f4c8464230e56f8bf8, type: 3}
@@ -42236,7 +42238,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FusionManager
   FusionButton: {fileID: 0}
-  FusionSFX: {fileID: 0}
+  FusionSFX: {fileID: 8300000, guid: 7a4d6aa7b0f13ea4ea4a652f875ba7e2, type: 3}
   Recipes:
   - ElementA: 1
     ElementB: 2
@@ -42335,7 +42337,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 3928426760167212399, guid: 24142c587292e124c84a7843bdac2b53, type: 2}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 24a698f89b8a0ee4a860dc9720517b82, type: 3}
+  m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -48342,6 +48344,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a0efef60176cfe48b3ccac311071f88, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
+  MainMixer: {fileID: 0}
+  MasterParam: MasterVol
+  MusicParam: MusicVol
+  SFXParam: SFXVol
+  MusicSource: {fileID: 0}
+  SFXSource: {fileID: 0}
 --- !u!4 &2015602343
 Transform:
   m_ObjectHideFlags: 0

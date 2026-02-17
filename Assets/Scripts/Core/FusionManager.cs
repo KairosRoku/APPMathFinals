@@ -123,9 +123,10 @@ public class FusionManager : MonoBehaviour
              _nodeB.turret = newTower;
              
              // Play SFX
-             if (FusionSFX != null && AudioManager.Instance != null)
+             if (GameManager.Instance != null && GameManager.Instance.AudioManager != null)
              {
-                 AudioManager.Instance.PlaySFX(FusionSFX);
+                 if (FusionSFX != null) GameManager.Instance.AudioManager.PlaySFX(FusionSFX);
+                 else GameManager.Instance.AudioManager.PlaySFX("fusion_01");
              }
 
             // Reset Selection

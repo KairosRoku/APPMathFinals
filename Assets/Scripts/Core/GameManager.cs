@@ -13,6 +13,8 @@ public class GameManager : MonoBehaviour
     public int CurrentHealth;
     public int CurrentGold;
     public bool IsGameOver = false;
+    
+    public AudioManager AudioManager => AudioManager.Instance;
 
     // Events for UI and FX
     public event Action<int> OnHealthChanged;
@@ -23,13 +25,34 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        // Standard singleton pattern
         if (Instance == null)
+        {
             Instance = this;
-        else
-            Destroy(gameObject);
+        }
+        else if (Instance != this)
+        {
+            // If the instance exists (likely persistent), force it to reset for the new scene
+            Instance.ResetGameState();
+            
+            // Then destroy this duplicate component
+            Destroy(this);
+            return; 
+        }
 
+        // Always ensure stats are reset when a new scene starts or this instance is initialized
+        ResetGameState();
+    }
+
+    public void ResetGameState()
+    {
         CurrentHealth = StartingHealth;
         CurrentGold = StartingGold;
+        IsGameOver = false;
+        
+        // Notify UI that values have been reset
+        OnHealthChanged?.Invoke(CurrentHealth);
+        OnGoldChanged?.Invoke(CurrentGold);
     }
 
     private void Start()

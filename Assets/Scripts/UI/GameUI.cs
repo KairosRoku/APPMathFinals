@@ -34,6 +34,8 @@ public class GameUI : MonoBehaviour
     public Button StartWaveButton;
     public GameObject PauseButton;
     public GameObject ResumeButton;
+    public Button[] RestartButtons; 
+    public Button[] HomeButtons;
 
     [Header("Wave Indicator")]
     public Image WaveIndicatorImage;
@@ -111,6 +113,22 @@ public class GameUI : MonoBehaviour
             StartWaveButton.onClick.AddListener(() => {
                 FindAnyObjectByType<WaveManager>().StartNextWave();
             });
+        }
+
+        if (RestartButtons != null)
+        {
+            foreach (Button btn in RestartButtons)
+            {
+                if (btn != null) btn.onClick.AddListener(RestartLevel);
+            }
+        }
+
+        if (HomeButtons != null)
+        {
+            foreach (Button btn in HomeButtons)
+            {
+                if (btn != null) btn.onClick.AddListener(BackToMainMenu);
+            }
         }
     }
 

@@ -19,7 +19,11 @@ public class TowerBase : MonoBehaviour
     public GameObject MuzzleFlashPrefab; // NEW: Muzzle flash at fire point
     public LineRenderer LaserLine; // For main Lightning line
     public SpriteRenderer IcePulseSprite; // For Ice AOE visual (optional)
-    public AudioClip ShootSFX; // SFX for shooting
+
+    [Header("Audio")]
+    public AudioClip ShootSFX; // Primary shoot SFX
+    public AudioClip ImpactSFX; // SFX for impact (lightning/hit)
+    public AudioClip SpecialSFX; // SFX for special abilities (ice pulse)
 
     
     // Status Effect Stats
@@ -120,7 +124,11 @@ public class TowerBase : MonoBehaviour
         }
 
         // SFX: Basic shoot sound
-        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("Shoot", 0.7f);
+        if (GameManager.Instance != null && GameManager.Instance.AudioManager != null)
+        {
+            if (ShootSFX != null) GameManager.Instance.AudioManager.PlaySFX(ShootSFX, 0.7f);
+            else GameManager.Instance.AudioManager.PlaySFX("Fire", 0.7f);
+        }
 
         // Attack Logic based on Element
         if (Element == ElementType.Lightning || Element == ElementType.LightningLightning || 
@@ -161,7 +169,11 @@ public class TowerBase : MonoBehaviour
              StartCoroutine(AnimateIcePulse());
          }
          
-         if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("IcePulse", 0.8f);
+         if (GameManager.Instance != null && GameManager.Instance.AudioManager != null)
+         {
+             if (SpecialSFX != null) GameManager.Instance.AudioManager.PlaySFX(SpecialSFX, 0.8f);
+             else GameManager.Instance.AudioManager.PlaySFX("Ice_01", 0.8f);
+         }
 
          if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.1f, 0.03f);
 
@@ -206,7 +218,11 @@ public class TowerBase : MonoBehaviour
 
         if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.05f, 0.02f);
 
-        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("LightningBolt", 0.6f);
+        if (GameManager.Instance != null && GameManager.Instance.AudioManager != null)
+        {
+            if (ImpactSFX != null) GameManager.Instance.AudioManager.PlaySFX(ImpactSFX, 0.6f);
+            else GameManager.Instance.AudioManager.PlaySFX("Lightning", 0.6f);
+        }
 
         DealDamage(_target);
         SpawnImpactVFX(_target.transform.position);

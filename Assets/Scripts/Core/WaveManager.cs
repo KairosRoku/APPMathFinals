@@ -51,8 +51,26 @@ public class WaveManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else if (Instance != this)
+        {
+            Instance.ResetWaveManager();
+            Destroy(this);
+            return;
+        }
+
+        ResetWaveManager();
+    }
+
+    public void ResetWaveManager()
+    {
+        waveIndex = 0;
+        _waveInProgress = false;
+        _nextWaveTimer = 5f;
+        // ActiveEnemyCount is naturally managed but good to reset if logic is loose
     }
 
     private void Start()
