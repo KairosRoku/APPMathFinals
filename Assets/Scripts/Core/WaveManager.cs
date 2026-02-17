@@ -51,31 +51,51 @@ public class WaveManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
-        }
-        else if (Instance != this)
-        {
+            // Transfer scene-specific data to the persistent instance
+            Instance.Waves = this.Waves;
+            Instance.SpawnPoint = this.SpawnPoint;
+            
+            // Prefabs might be updated/changed per level
+            Instance.GruntPrefab = this.GruntPrefab;
+            Instance.RunnerPrefab = this.RunnerPrefab;
+            Instance.TankPrefab = this.TankPrefab;
+            Instance.BossPrefab = this.BossPrefab;
+
             Instance.ResetWaveManager();
             Destroy(this);
             return;
         }
 
+        Instance = this;
         ResetWaveManager();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     public void ResetWaveManager()
     {
+        StopAllCoroutines();
         waveIndex = 0;
         _waveInProgress = false;
         _nextWaveTimer = 5f;
-        // ActiveEnemyCount is naturally managed but good to reset if logic is loose
+        ActiveEnemyCount = 0;
+
+        // Repair references if they are lost (important if manager is persistent)
+        if (SpawnPoint == null)
+        {
+            GameObject sp = GameObject.Find("SpawnPoint");
+            if (sp != null) SpawnPoint = sp.transform;
+        }
     }
 
     private void Start()
     {
-        _nextWaveTimer = 5f; // First wave starts automatically in 5s if not clicked
+        ResetWaveManager();
     }
 
     private void Update()

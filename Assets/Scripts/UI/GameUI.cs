@@ -111,7 +111,7 @@ public class GameUI : MonoBehaviour
         if (StartWaveButton != null)
         {
             StartWaveButton.onClick.AddListener(() => {
-                FindAnyObjectByType<WaveManager>().StartNextWave();
+                if (WaveManager.Instance != null) WaveManager.Instance.StartNextWave();
             });
         }
 
@@ -140,7 +140,9 @@ public class GameUI : MonoBehaviour
             GameManager.Instance.OnHealthChanged -= UpdateHealth;
             GameManager.Instance.OnDamageTaken -= PlayDamageEffect;
             GameManager.Instance.OnGameLost -= ShowGameOver;
+            GameManager.Instance.OnGameWon -= ShowVictory;
         }
+        if (Instance == this) Instance = null;
     }
 
     // Lerp Gold for smooth feedback
@@ -402,8 +404,13 @@ public class GameUI : MonoBehaviour
 
     public void BackToMainMenu()
     {
-        Time.timeScale = 1;
-        SceneManager.LoadScene("MainMenu"); // Transition to MainMenu scene
+        if (TowerDefense.UI.UIManager.Instance != null) 
+            TowerDefense.UI.UIManager.Instance.ReturnToMainMenu();
+        else 
+        {
+            Time.timeScale = 1;
+            SceneManager.LoadScene("MainMenu");
+        }
     }
 
     public void RestartLevel()

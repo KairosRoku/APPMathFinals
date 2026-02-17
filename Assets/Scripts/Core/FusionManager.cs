@@ -23,12 +23,17 @@ public class FusionManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
+        Instance = this;
         if (FusionButton != null)
         {
             FusionButton.gameObject.SetActive(false);
             FusionButton.onClick.AddListener(DoFusion);
         }
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     public void SelectForFusion(Node node)

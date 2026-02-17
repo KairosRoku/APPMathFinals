@@ -12,8 +12,12 @@ public class PathController : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
-            Instance = this;
+        Instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     private void OnDrawGizmos()

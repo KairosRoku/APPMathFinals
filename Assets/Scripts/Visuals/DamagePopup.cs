@@ -38,37 +38,43 @@ public class DamagePopup : MonoBehaviour
         float elapsed = 0;
         Color startColor = Text.color;
 
-        // Starting scale pop
-        transform.localScale = Vector3.one * 0.5f;
+        // "Juice": Scale pop at start
+        Vector3 initialScale = Vector3.one * 0.5f;
+        Vector3 peakScale = Vector3.one * 1.5f;
+        Vector3 settleScale = Vector3.one;
 
         while (elapsed < Duration)
         {
             elapsed += Time.deltaTime;
             float t = elapsed / Duration;
 
-            // Physics-like movement (Arc)
+            // Manual Physics Arc
             if (_rectTransform != null)
             {
-                // Applying gravity to vertical velocity
                 _velocity.y -= Gravity * Time.deltaTime;
                 _rectTransform.anchoredPosition += _velocity * Time.deltaTime;
             }
 
-            // Scale effect: Start small, pop big, then settle
-            if (t < 0.2f)
+            // Enhanced Scaling logic
+            if (t < 0.2f) // Pop phase
             {
-                transform.localScale = Vector3.Lerp(Vector3.one * 0.5f, Vector3.one * 1.5f, t / 0.2f);
+                transform.localScale = Vector3.Lerp(initialScale, peakScale, t / 0.2f);
             }
-            else
+            else if (t < 0.4f) // Settle phase
             {
-                transform.localScale = Vector3.Lerp(Vector3.one * 1.5f, Vector3.one, (t - 0.2f) / 0.8f);
+                transform.localScale = Vector3.Lerp(peakScale, settleScale, (t - 0.2f) / 0.2f);
+            }
+            else // Drift/Fade phase
+            {
+                transform.localScale = settleScale;
             }
 
-            // Smooth Fade away
+            // Alpha Fade (Standard Professional Curve)
             if (t > 0.5f)
             {
+                float alphaT = (t - 0.5f) / 0.5f;
                 Color c = startColor;
-                c.a = Mathf.Lerp(1, 0, (t - 0.5f) / 0.5f);
+                c.a = Mathf.SmoothStep(1f, 0f, alphaT);
                 Text.color = c;
             }
 

@@ -6,7 +6,12 @@ public class CameraShake : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
+        Instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     public void Shake(float duration, float magnitude)

@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class MainMenuController : MonoBehaviour
 {
+    public static MainMenuController Instance;
+
     [Header("Panels")]
     public GameObject MainPanel;
     public GameObject SettingsPanel;
@@ -11,17 +13,48 @@ public class MainMenuController : MonoBehaviour
     [Header("Scene Names")]
     public string GameSceneName = "SampleScene";
 
+    private void Awake()
+    {
+        // If a duplicate exists (from a persistent object or stale scene load)
+        // We MUST prioritize this NEW one because the scene's buttons are linked to it.
+        if (Instance != null && Instance != this)
+        {
+            // We destroy the old component/object to let this new one take over.
+            // If it's a dedicated MainMenu object, destroy the whole thing.
+            if (Instance.gameObject != gameObject)
+            {
+                Destroy(Instance.gameObject);
+            }
+            else
+            {
+                Destroy(Instance);
+            }
+        }
+        
+        Instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
     private void Start()
     {
+        Time.timeScale = 1;
+        
+        // Self-heal just in case
+        if (MainPanel == null) MainPanel = GameObject.Find("MainPanel");
+        if (SettingsPanel == null) SettingsPanel = GameObject.Find("SettingsPanel");
+
         ShowMainPanel();
     }
 
     private void Update()
     {
-        // Support Escape key to go back to main menu if in a sub-panel
         if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
         {
-            if (SettingsPanel.activeSelf)
+            if (SettingsPanel != null && SettingsPanel.activeSelf)
             {
                 ShowMainPanel();
             }
@@ -35,8 +68,8 @@ public class MainMenuController : MonoBehaviour
 
     public void ShowSettings()
     {
-        MainPanel.SetActive(false);
-        SettingsPanel.SetActive(true);
+        if (MainPanel != null) MainPanel.SetActive(false);
+        if (SettingsPanel != null) SettingsPanel.SetActive(true);
     }
 
     public void ShowMainPanel()
@@ -45,7 +78,6 @@ public class MainMenuController : MonoBehaviour
         if (SettingsPanel != null) SettingsPanel.SetActive(false);
     }
 
-    // Alias for ShowMainPanel to use on "Back" buttons
     public void GoBack()
     {
         ShowMainPanel();

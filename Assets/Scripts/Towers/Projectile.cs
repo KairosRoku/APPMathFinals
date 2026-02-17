@@ -9,8 +9,10 @@ public class Projectile : MonoBehaviour
     private float _slowAmt;
     private float _slowDur;
     private float _explosionRadius;
+    private float _spreadingRadius;
     
     public float Speed = 10f;
+    public float TargetOffset = 0.5f; // Aim for center, not feet
     public GameObject ImpactVFXPrefab;
 
     [Header("Trail Settings")]
@@ -18,7 +20,7 @@ public class Projectile : MonoBehaviour
     public float TrailSpawnRate = 0.05f;
     private float _trailTimer = 0f;
 
-    public void Seek(EnemyBase target, float damage, ElementType element, float burnDmg, float slowAmt, float slowDur, float explosionRadius = 0)
+    public void Seek(EnemyBase target, float damage, ElementType element, float burnDmg, float slowAmt, float slowDur, float explosionRadius = 0, float spreadingRadius = 0)
     {
         _target = target;
         _damage = damage;
@@ -27,17 +29,19 @@ public class Projectile : MonoBehaviour
         _slowAmt = slowAmt;
         _slowDur = slowDur;
         _explosionRadius = explosionRadius;
+        _spreadingRadius = spreadingRadius;
     }
 
     private void Update()
     {
-        if (_target == null)
+        if (_target == null || _target.IsDead)
         {
             Destroy(gameObject);
             return;
         }
 
-        Vector3 dir = _target.transform.position - transform.position;
+        Vector3 targetPos = _target.transform.position + Vector3.up * TargetOffset;
+        Vector3 dir = targetPos - transform.position;
         float distanceThisFrame = Speed * Time.deltaTime;
 
         if (dir.magnitude <= distanceThisFrame)
@@ -75,6 +79,10 @@ public class Projectile : MonoBehaviour
         {
             Explode();
         }
+        else if (_spreadingRadius > 0)
+        {
+            Spread();
+        }
         else
         {
             ApplyEffects(_target);
@@ -88,9 +96,31 @@ public class Projectile : MonoBehaviour
         EnemyBase[] enemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
         foreach (EnemyBase enemy in enemies)
         {
+            if (enemy.IsDead) continue;
             if (Vector3.Distance(transform.position, enemy.transform.position) <= _explosionRadius)
             {
                 ApplyEffects(enemy);
+            }
+        }
+    }
+
+    private void Spread()
+    {
+        // Hit primary
+        ApplyEffects(_target);
+
+        // Spread to others
+        EnemyBase[] enemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
+        foreach (EnemyBase enemy in enemies)
+        {
+            if (enemy == _target || enemy.IsDead) continue;
+
+            float dist = Vector3.Distance(_target.transform.position, enemy.transform.position);
+            if (dist <= _spreadingRadius)
+            {
+                // Apply reduced damage and burn for spread
+                enemy.TakeDamage(_damage * 0.5f, _element);
+                enemy.ApplyBurn(_burnDmg * 0.5f, 3f);
             }
         }
     }

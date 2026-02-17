@@ -156,7 +156,7 @@ public class TowerBase : MonoBehaviour
             if (projectile != null)
             {
                 // Slow/Burn amounts can be passed or handled in DealDamage upon impact
-                projectile.Seek(_target, Damage, Element, BurnDamage, SlowAmount, SlowDuration, ExplosionRadius);
+                projectile.Seek(_target, Damage, Element, BurnDamage, SlowAmount, SlowDuration, ExplosionRadius, 0f);
             }
         }
     }
@@ -205,6 +205,7 @@ public class TowerBase : MonoBehaviour
         // Main lightning line to primary target
         if(LaserLine != null)
         {
+             ApplyLightningVisuals(LaserLine);
              LaserLine.enabled = true;
              if (_mainBoltJitter != null)
                 _mainBoltJitter.DrawBolt(FirePoint.position, _target.transform.position);
@@ -312,27 +313,8 @@ public class TowerBase : MonoBehaviour
         Projectile projectile = projectileGO.GetComponent<Projectile>();
         if (projectile != null)
         {
-            projectile.Seek(_target, Damage, Element, BurnDamage, SlowAmount, SlowDuration);
-        }
-
-        // AOE Spreading Logic: Hit all "adjacent" enemies in a radius
-        EnemyBase[] allEnemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
-        foreach (EnemyBase enemy in allEnemies)
-        {
-            if (enemy == _target || enemy.IsDead) continue;
-
-            float dist = Vector3.Distance(_target.transform.position, enemy.transform.position);
-            if (dist <= 2.5f) // "Adjacent" radius
-            {
-                // Apply immediate damage (50% effectiveness)
-                enemy.TakeDamage(Damage * 0.5f, Element);
-                
-                // Apply spreading fire (50% effectiveness)
-                enemy.ApplyBurn(BurnDamage * 0.5f, 3f);
-                
-                // Visual for spread
-                CreateChainLine(_target.transform.position, enemy.transform.position);
-            }
+            // Now AOE happens on IMPACT via projectile spread radius (2.5f)
+            projectile.Seek(_target, Damage, Element, BurnDamage, SlowAmount, SlowDuration, 0f, 2.5f);
         }
     }
 
@@ -390,8 +372,8 @@ public class TowerBase : MonoBehaviour
         chainLine.startWidth = LaserLine.startWidth * 0.7f;
         chainLine.endWidth = LaserLine.endWidth * 0.7f;
         
-        // Use the full gradient from the source
-        chainLine.colorGradient = LaserLine.colorGradient;
+        // Match the visuals of the main bolt
+        ApplyLightningVisuals(chainLine);
         
         chainLine.positionCount = 2;
         chainLine.useWorldSpace = true;
@@ -414,6 +396,47 @@ public class TowerBase : MonoBehaviour
         }
     }
     
+    private void ApplyLightningVisuals(LineRenderer line)
+    {
+        if (line == null) return;
+
+        Color c1 = Color.white;
+        Color c2 = Color.white;
+
+        switch (Element)
+        {
+            case ElementType.Lightning:
+            case ElementType.LightningLightning:
+                c1 = new Color(0.4f, 0.7f, 1f); // Cyan-Blue
+                c2 = new Color(0.1f, 0.3f, 1f); // Deep Blue
+                break;
+            case ElementType.FireLightning:
+                c1 = new Color(1f, 0.8f, 0.2f); // Orange-Yellow
+                c2 = new Color(1f, 0.2f, 0f);   // Bright Red-Orange
+                break;
+            case ElementType.IceLightning:
+                c1 = new Color(0.8f, 1f, 1f);   // Ice Cyan
+                c2 = new Color(0.2f, 0.6f, 1f); // Cold Blue
+                break;
+            default:
+                c1 = Color.white;
+                c2 = Color.cyan;
+                break;
+        }
+
+        // Set both start/end colors AND gradients to be absolutely sure color is applied
+        line.startColor = c1;
+        line.endColor = c2;
+        
+        // Also apply a simple gradient if possible
+        Gradient g = new Gradient();
+        g.SetKeys(
+            new GradientColorKey[] { new GradientColorKey(c1, 0.0f), new GradientColorKey(c2, 1.0f) },
+            new GradientAlphaKey[] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(1.0f, 0.8f), new GradientAlphaKey(0.0f, 1.0f) }
+        );
+        line.colorGradient = g;
+    }
+
     private IEnumerator AnimateIcePulse()
     {
         if (IcePulseSprite == null) yield break;

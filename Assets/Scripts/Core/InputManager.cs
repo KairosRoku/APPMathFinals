@@ -16,13 +16,24 @@ public class InputManager : MonoBehaviour
 
     private void Start()
     {
-        _cam = Camera.main;
+        EnsureCamera();
         _allNodes = FindObjectsByType<Node>(FindObjectsSortMode.None);
         Debug.Log($"[InputManager] Started. Found {_allNodes.Length} nodes.");
     }
 
+    private bool EnsureCamera()
+    {
+        // Refresh if null OR if the object exists but its native representation is dead ("Missing")
+        if (_cam == null) 
+        {
+            _cam = Camera.main;
+        }
+        return _cam != null;
+    }
+
     private void Update()
     {
+        if (!EnsureCamera()) return;
         // Toggle Pause
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {

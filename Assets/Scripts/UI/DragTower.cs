@@ -12,7 +12,13 @@ public class DragTower : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     private void Start()
     {
         _canvas = GetComponentInParent<Canvas>();
-        _cam = Camera.main;
+        EnsureCamera();
+    }
+
+    private bool EnsureCamera()
+    {
+        if (_cam == null) _cam = Camera.main;
+        return _cam != null;
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -44,6 +50,7 @@ public class DragTower : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (!EnsureCamera()) return;
         if (_slideIcon != null)
         {
             _slideIcon.transform.position = eventData.position;
@@ -82,6 +89,7 @@ public class DragTower : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (!EnsureCamera()) return;
         if (_slideIcon != null) Destroy(_slideIcon);
         BuildManager.Instance.UpdateSelectionIcon(null);
 

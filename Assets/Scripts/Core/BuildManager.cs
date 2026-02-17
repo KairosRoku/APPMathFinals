@@ -49,27 +49,52 @@ public class BuildManager : MonoBehaviour
         selectedNode = null;
     }
 
+    public void ResetBuildManager()
+    {
+        towerToBuild = null;
+        selectedNode = null;
+    }
+
     private void Awake()
     {
-        if (Instance == null) 
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
-            Debug.Log("[BuildManager] Instance initialized.");
+            // Transfer scene-specific prefabs and indicators
+            Instance.SelectionIconPrefab = this.SelectionIconPrefab;
+            Instance.RangeIndicatorPrefab = this.RangeIndicatorPrefab;
+            Instance.SmokeVFXPrefab = this.SmokeVFXPrefab;
+
+            Instance.ResetBuildManager();
+            Destroy(this);
+            return;
         }
+
+        Instance = this;
+        ResetBuildManager();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
+    private void EnsureVisualHelpers()
+    {
+        // If they are null (likely destroyed during scene reload if manager is persistent)
+        // or if we just started, create them.
         
         int ignoreLayer = LayerMask.NameToLayer("Ignore Raycast");
-        if (ignoreLayer == -1) ignoreLayer = 2; // Fallback to Layer 2 which is usually Ignore Raycast
+        if (ignoreLayer == -1) ignoreLayer = 2;
 
-        if (SelectionIconPrefab != null)
+        if (currentSelectionIcon == null && SelectionIconPrefab != null)
         {
             currentSelectionIcon = Instantiate(SelectionIconPrefab, new Vector3(0, 0.2f, 0), Quaternion.identity);
             currentSelectionIcon.layer = ignoreLayer;
-            // Also set children
             foreach (Transform child in currentSelectionIcon.GetComponentsInChildren<Transform>()) child.gameObject.layer = ignoreLayer;
             currentSelectionIcon.SetActive(false);
         }
 
-        if (RangeIndicatorPrefab != null)
+        if (currentRangeIndicator == null && RangeIndicatorPrefab != null)
         {
             currentRangeIndicator = Instantiate(RangeIndicatorPrefab);
             currentRangeIndicator.layer = ignoreLayer;
@@ -83,6 +108,7 @@ public class BuildManager : MonoBehaviour
 
     public void UpdateSelectionIcon(Node node, bool isFusionPossible = false)
     {
+        EnsureVisualHelpers();
         if (currentSelectionIcon == null) return;
 
         if (node == null)

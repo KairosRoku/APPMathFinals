@@ -25,23 +25,21 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        // Standard singleton pattern
-        if (Instance == null)
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
-        }
-        else if (Instance != this)
-        {
-            // If the instance exists (likely persistent), force it to reset for the new scene
+            // Reset the existing persistent instance for the new scene
             Instance.ResetGameState();
-            
-            // Then destroy this duplicate component
             Destroy(this);
-            return; 
+            return;
         }
 
-        // Always ensure stats are reset when a new scene starts or this instance is initialized
+        Instance = this;
         ResetGameState();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     public void ResetGameState()
