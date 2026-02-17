@@ -5,29 +5,25 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    [Header("Game Settings")]
     public int StartingHealth = 20;
     public int StartingGold = 100;
 
-    [Header("Current State")]
     public int CurrentHealth;
     public int CurrentGold;
     public bool IsGameOver = false;
     
     public AudioManager AudioManager => AudioManager.Instance;
 
-    // Events for UI and FX
     public event Action<int> OnHealthChanged;
     public event Action<int> OnGoldChanged;
     public event Action OnGameLost;
     public event Action OnGameWon;
-    public event Action OnDamageTaken; // For Camera Shake
+    public event Action OnDamageTaken;
 
     private void Awake()
     {
         if (Instance != null && Instance != this)
         {
-            // Reset the existing persistent instance for the new scene
             Instance.ResetGameState();
             Destroy(this);
             return;
@@ -48,14 +44,12 @@ public class GameManager : MonoBehaviour
         CurrentGold = StartingGold;
         IsGameOver = false;
         
-        // Notify UI that values have been reset
         OnHealthChanged?.Invoke(CurrentHealth);
         OnGoldChanged?.Invoke(CurrentGold);
     }
 
     private void Start()
     {
-        // Initialize UI
         OnHealthChanged?.Invoke(CurrentHealth);
         OnGoldChanged?.Invoke(CurrentGold);
     }

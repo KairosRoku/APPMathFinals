@@ -5,49 +5,43 @@ using System.Collections.Generic;
 
 public class TowerBase : MonoBehaviour
 {
-    [Header("Stats")]
     public float Range = 3f;
     public float Damage = 10f;
     public float FireRate = 1f;
     public ElementType Element;
-    public float ExplosionRadius = 0f; // For Fire AOE
+    public float ExplosionRadius = 0f;
 
-    [Header("Visuals")]
     public Transform FirePoint;
-    public GameObject ProjectilePrefab; // Optional: If projectile based
-    public GameObject ImpactVFXPrefab; // For instant hit/AOE effects
-    public GameObject MuzzleFlashPrefab; // NEW: Muzzle flash at fire point
-    public LineRenderer LaserLine; // For main Lightning line
-    public SpriteRenderer IcePulseSprite; // For Ice AOE visual (optional)
+    public GameObject ProjectilePrefab; 
+    public GameObject ImpactVFXPrefab; 
+    public GameObject MuzzleFlashPrefab;
+    public LineRenderer LaserLine; 
+    public SpriteRenderer IcePulseSprite; 
 
-    [Header("Audio")]
-    public AudioClip ShootSFX; // Primary shoot SFX
-    public AudioClip ImpactSFX; // SFX for impact (lightning/hit)
-    public AudioClip SpecialSFX; // SFX for special abilities (ice pulse)
+    public AudioClip ShootSFX; 
+    public AudioClip ImpactSFX; 
+    public AudioClip SpecialSFX; 
 
-    
-    // Status Effect Stats
     public float BurnDamage = 2f;
-    public float SlowAmount = 0.3f; // 30% slow
+    public float SlowAmount = 0.3f; 
     public float SlowDuration = 2f;
     
     private float _fireCountdown = 0f;
     private EnemyBase _target;
-    private List<LineRenderer> _chainLines = new List<LineRenderer>(); // For chain lightning visuals
+    private List<LineRenderer> _chainLines = new List<LineRenderer>(); 
     private LightningBoltJitter _mainBoltJitter;
 
     private void Start()
     {
         if (LaserLine != null) _mainBoltJitter = LaserLine.GetComponent<LightningBoltJitter>();
 
-        // Override stats based on element
         if (Element == ElementType.Ice)
         {
-            FireRate = 1.0f; // Attack every 1 second
+            FireRate = 1.0f;
         }
         else if (Element == ElementType.IceIce)
         {
-            FireRate = 0.5f; // Attack every 2 seconds
+            FireRate = 0.5f;
         }
     }
 
@@ -60,11 +54,6 @@ public class TowerBase : MonoBehaviour
 
         if (_target != null)
         {
-            // Rotation disabled for 2.5D - towers stay facing forward
-            // Vector3 dir = _target.transform.position - transform.position;
-            // float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-            // transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-
             if (_fireCountdown <= 0f)
             {
                 Shoot();
@@ -74,7 +63,6 @@ public class TowerBase : MonoBehaviour
 
         _fireCountdown -= Time.deltaTime;
         
-        // Disable Laser if no target or not shooting
         if(LaserLine != null && (Time.timeScale == 0 || _target == null)) 
         {
             LaserLine.enabled = false;
@@ -116,46 +104,38 @@ public class TowerBase : MonoBehaviour
 
     private void Shoot()
     {
-        // Muzzle Flash
         if (MuzzleFlashPrefab != null && FirePoint != null)
         {
             GameObject flash = Instantiate(MuzzleFlashPrefab, FirePoint.position, FirePoint.rotation);
             Destroy(flash, 0.5f);
         }
 
-        // SFX: Basic shoot sound
         if (GameManager.Instance != null && GameManager.Instance.AudioManager != null)
         {
             if (ShootSFX != null) GameManager.Instance.AudioManager.PlaySFX(ShootSFX, 0.7f);
             else GameManager.Instance.AudioManager.PlaySFX("Fire", 0.7f);
         }
 
-        // Attack Logic based on Element
         if (Element == ElementType.Lightning || Element == ElementType.LightningLightning || 
             Element == ElementType.FireLightning || Element == ElementType.IceLightning)
         {
-            // Instant Hit / Chain
             ChainLightningAttack();
         }
         else if (Element == ElementType.Ice || Element == ElementType.IceIce)
         {
-            // Ice Pulse AOE
             IcePulseAttack();
         }
         else if (Element == ElementType.FireFire)
         {
-            // Spreading Fire
             FireFireSpreadingAttack();
         }
         else if (ProjectilePrefab != null)
         {
-            // Spawn Projectile (Default for Fire, FireIce, etc.)
             GameObject projectileGO = Instantiate(ProjectilePrefab, FirePoint.position, FirePoint.rotation);
             Projectile projectile = projectileGO.GetComponent<Projectile>();
             
             if (projectile != null)
             {
-                // Slow/Burn amounts can be passed or handled in DealDamage upon impact
                 projectile.Seek(_target, Damage, Element, BurnDamage, SlowAmount, SlowDuration, ExplosionRadius, 0f);
             }
         }
@@ -163,7 +143,6 @@ public class TowerBase : MonoBehaviour
 
     private void IcePulseAttack()
     {
-         // Visual Pulse Effect
          if (IcePulseSprite != null)
          {
              StartCoroutine(AnimateIcePulse());
@@ -177,7 +156,6 @@ public class TowerBase : MonoBehaviour
 
          if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.1f, 0.03f);
 
-         // Slow/Freeze enemies in radius around tower
          EnemyBase[] allEnemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
          foreach(var enemy in allEnemies)
          {
@@ -186,13 +164,10 @@ public class TowerBase : MonoBehaviour
              {
                  if (Element == ElementType.IceIce)
                  {
-                     // Stun: 100% slow for 1.5 seconds (shorter than the 2s cooldown)
                      enemy.ApplySlow(1f, 1.5f); 
-                     Debug.Log($"[Tower] {gameObject.name} (IceIce) applied STUN to {enemy.name}");
                  }
                  else
                  {
-                     // Regular Slow: Apply configured slow for 1.2 seconds (longer than the 1s cooldown)
                      enemy.ApplySlow(SlowAmount, 1.2f);
                  }
                  enemy.TakeDamage(Damage, Element); 
@@ -202,7 +177,6 @@ public class TowerBase : MonoBehaviour
     
     private void ChainLightningAttack()
     {
-        // Main lightning line to primary target
         if(LaserLine != null)
         {
              ApplyLightningVisuals(LaserLine);
@@ -228,10 +202,9 @@ public class TowerBase : MonoBehaviour
         DealDamage(_target);
         SpawnImpactVFX(_target.transform.position);
 
-        // Chain Logic
         List<EnemyBase> hitEnemies = new List<EnemyBase> { _target };
-        int maxChains = 2; // Default
-        if (Element == ElementType.LightningLightning) maxChains = 99; // "Entire wave"
+        int maxChains = 2; 
+        if (Element == ElementType.LightningLightning) maxChains = 99; 
 
         Vector3 lastHitPosition = _target.transform.position;
         EnemyBase currentSource = _target;
@@ -241,7 +214,6 @@ public class TowerBase : MonoBehaviour
             EnemyBase nextTarget = FindNextChainTarget(currentSource, hitEnemies);
             if (nextTarget == null)
             {
-                // Last enemy in chain effects
                 ApplyLastChainEffects(currentSource);
                 break;
             }
@@ -254,7 +226,6 @@ public class TowerBase : MonoBehaviour
             lastHitPosition = nextTarget.transform.position;
             currentSource = nextTarget;
 
-            // If it's the last possible chain in the loop, apply effects
             if (i == maxChains - 1)
             {
                 ApplyLastChainEffects(nextTarget);
@@ -273,7 +244,7 @@ public class TowerBase : MonoBehaviour
             if (enemy.IsDead || alreadyHit.Contains(enemy)) continue;
 
             float dist = Vector3.Distance(source.transform.position, enemy.transform.position);
-            if (dist <= 4f && dist < shortestDist) // 4f bounce range
+            if (dist <= 4f && dist < shortestDist) 
             {
                 shortestDist = dist;
                 nearest = enemy;
@@ -286,13 +257,12 @@ public class TowerBase : MonoBehaviour
     {
         if (Element == ElementType.FireLightning)
         {
-            // AOE on the last enemy
             SpawnImpactVFX(lastEnemy.transform.position);
             EnemyBase[] allEnemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
             foreach (EnemyBase enemy in allEnemies)
             {
                 if (enemy.IsDead) continue;
-                if (Vector3.Distance(lastEnemy.transform.position, enemy.transform.position) <= 2f) // Arbitrary AOE radius
+                if (Vector3.Distance(lastEnemy.transform.position, enemy.transform.position) <= 2f) 
                 {
                     enemy.TakeDamage(Damage * 0.5f, Element);
                     enemy.ApplyBurn(BurnDamage, 2f);
@@ -301,19 +271,16 @@ public class TowerBase : MonoBehaviour
         }
         else if (Element == ElementType.IceLightning)
         {
-            // Slow + Freeze on the last enemy
-            lastEnemy.ApplySlow(1f, SlowDuration); // Freeze
+            lastEnemy.ApplySlow(1f, SlowDuration);
         }
     }
 
     private void FireFireSpreadingAttack()
     {
-        // Fire projectile to first target
         GameObject projectileGO = Instantiate(ProjectilePrefab, FirePoint.position, FirePoint.rotation);
         Projectile projectile = projectileGO.GetComponent<Projectile>();
         if (projectile != null)
         {
-            // Now AOE happens on IMPACT via projectile spread radius (2.5f)
             projectile.Seek(_target, Damage, Element, BurnDamage, SlowAmount, SlowDuration, 0f, 2.5f);
         }
     }
@@ -329,29 +296,25 @@ public class TowerBase : MonoBehaviour
     private void DealDamage(EnemyBase enemy)
     {
         float actualDamage = Damage;
-        if (Element == ElementType.LightningLightning) actualDamage *= 2.5f; // "High damage"
+        if (Element == ElementType.LightningLightning) actualDamage *= 2.5f;
 
         enemy.TakeDamage(actualDamage, Element);
 
-        // Apply Slow (Ice component)
         if (Element == ElementType.Ice || Element == ElementType.FireIce || Element == ElementType.IceLightning)
         {
             enemy.ApplySlow(SlowAmount, SlowDuration);
         }
 
-        // Apply Freeze (IceIce)
         if (Element == ElementType.IceIce)
         {
             enemy.ApplySlow(1f, SlowDuration);
         }
 
-        // Apply Burn (Fire component)
         if (Element == ElementType.Fire || Element == ElementType.FireIce || Element == ElementType.FireLightning || Element == ElementType.FireFire)
         {
             enemy.ApplyBurn(BurnDamage, 3f);
         }
 
-        // Apply Shock (Lightning component)
         if (Element == ElementType.Lightning || Element == ElementType.LightningLightning || 
             Element == ElementType.FireLightning || Element == ElementType.IceLightning)
         {
@@ -363,16 +326,13 @@ public class TowerBase : MonoBehaviour
     {
         if (LaserLine == null) return;
         
-        // Create a temporary line renderer for the chain
         GameObject chainObj = new GameObject("ChainLine");
         LineRenderer chainLine = chainObj.AddComponent<LineRenderer>();
         
-        // Copy settings from main laser line
         chainLine.material = LaserLine.material;
         chainLine.startWidth = LaserLine.startWidth * 0.7f;
         chainLine.endWidth = LaserLine.endWidth * 0.7f;
         
-        // Match the visuals of the main bolt
         ApplyLightningVisuals(chainLine);
         
         chainLine.positionCount = 2;
@@ -381,7 +341,6 @@ public class TowerBase : MonoBehaviour
         chainLine.SetPosition(0, from);
         chainLine.SetPosition(1, to);
         
-        // Store and destroy after brief display
         _chainLines.Add(chainLine);
         StartCoroutine(DestroyChainLineAfter(chainLine, 0.15f));
     }
@@ -407,16 +366,16 @@ public class TowerBase : MonoBehaviour
         {
             case ElementType.Lightning:
             case ElementType.LightningLightning:
-                c1 = new Color(0.4f, 0.7f, 1f); // Cyan-Blue
-                c2 = new Color(0.1f, 0.3f, 1f); // Deep Blue
+                c1 = new Color(0.4f, 0.7f, 1f);
+                c2 = new Color(0.1f, 0.3f, 1f);
                 break;
             case ElementType.FireLightning:
-                c1 = new Color(1f, 0.8f, 0.2f); // Orange-Yellow
-                c2 = new Color(1f, 0.2f, 0f);   // Bright Red-Orange
+                c1 = new Color(1f, 0.8f, 0.2f);
+                c2 = new Color(1f, 0.2f, 0f);
                 break;
             case ElementType.IceLightning:
-                c1 = new Color(0.8f, 1f, 1f);   // Ice Cyan
-                c2 = new Color(0.2f, 0.6f, 1f); // Cold Blue
+                c1 = new Color(0.8f, 1f, 1f);
+                c2 = new Color(0.2f, 0.6f, 1f);
                 break;
             default:
                 c1 = Color.white;
@@ -424,11 +383,9 @@ public class TowerBase : MonoBehaviour
                 break;
         }
 
-        // Set both start/end colors AND gradients to be absolutely sure color is applied
         line.startColor = c1;
         line.endColor = c2;
         
-        // Also apply a simple gradient if possible
         Gradient g = new Gradient();
         g.SetKeys(
             new GradientColorKey[] { new GradientColorKey(c1, 0.0f), new GradientColorKey(c2, 1.0f) },
@@ -441,13 +398,12 @@ public class TowerBase : MonoBehaviour
     {
         if (IcePulseSprite == null) yield break;
         
-        // Start invisible and small
         Color startColor = IcePulseSprite.color;
         startColor.a = 0.6f;
         IcePulseSprite.color = startColor;
         
         Vector3 startScale = Vector3.one * 0.5f;
-        Vector3 endScale = Vector3.one * (Range * 2); // Scale to match range
+        Vector3 endScale = Vector3.one * (Range * 2);
         
         IcePulseSprite.transform.localScale = startScale;
         IcePulseSprite.enabled = true;
@@ -460,10 +416,8 @@ public class TowerBase : MonoBehaviour
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
             
-            // Scale up
             IcePulseSprite.transform.localScale = Vector3.Lerp(startScale, endScale, t);
             
-            // Fade out
             Color c = IcePulseSprite.color;
             c.a = Mathf.Lerp(0.6f, 0f, t);
             IcePulseSprite.color = c;
@@ -472,7 +426,7 @@ public class TowerBase : MonoBehaviour
         }
         
         IcePulseSprite.enabled = false;
-        IcePulseSprite.transform.localScale = startScale; // Reset
+        IcePulseSprite.transform.localScale = startScale;
     }
     
     private IEnumerator DisableLaserAfter(float time)

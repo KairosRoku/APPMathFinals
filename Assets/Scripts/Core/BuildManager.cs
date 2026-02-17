@@ -8,14 +8,11 @@ public class BuildManager : MonoBehaviour
     private TowerBlueprint towerToBuild;
     private Node selectedNode;
     
-    // UI Reference
-    // public NodeUI nodeUI; 
-
     public bool CanBuild { get { return towerToBuild != null; } }
     public bool HasMoney { get { return GameManager.Instance.CurrentGold >= towerToBuild.cost; } }
 
     public GameObject SelectionIconPrefab;
-    public GameObject RangeIndicatorPrefab; // New field for range circle
+    public GameObject RangeIndicatorPrefab;
     public GameObject SmokeVFXPrefab;
     
     private GameObject currentSelectionIcon;
@@ -25,11 +22,6 @@ public class BuildManager : MonoBehaviour
     {
         towerToBuild = tower;
         selectedNode = null;
-        
-        if (tower != null && tower.prefab != null)
-            Debug.Log($"[BuildManager] Selected tower: {tower.prefab.name}");
-        else if (tower == null)
-            Debug.Log("[BuildManager] Tower selection cleared.");
     }
 
     public void SelectNode(Node node)
@@ -59,7 +51,6 @@ public class BuildManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            // Transfer scene-specific prefabs and indicators
             Instance.SelectionIconPrefab = this.SelectionIconPrefab;
             Instance.RangeIndicatorPrefab = this.RangeIndicatorPrefab;
             Instance.SmokeVFXPrefab = this.SmokeVFXPrefab;
@@ -80,9 +71,6 @@ public class BuildManager : MonoBehaviour
 
     private void EnsureVisualHelpers()
     {
-        // If they are null (likely destroyed during scene reload if manager is persistent)
-        // or if we just started, create them.
-        
         int ignoreLayer = LayerMask.NameToLayer("Ignore Raycast");
         if (ignoreLayer == -1) ignoreLayer = 2;
 
@@ -131,7 +119,6 @@ public class BuildManager : MonoBehaviour
         if (!currentSelectionIcon.activeSelf) currentSelectionIcon.SetActive(true);
         currentSelectionIcon.transform.position = node.transform.position + Vector3.up * 0.2f;
         
-        // Update Range Indicator
         if (currentRangeIndicator != null && towerToBuild != null)
         {
             if (!currentRangeIndicator.activeSelf) currentRangeIndicator.SetActive(true);
@@ -145,7 +132,6 @@ public class BuildManager : MonoBehaviour
             }
         }
 
-        // Handle Pulse Logic stable
         if (isFusionPossible)
         {
             if (!_isPulsing)
@@ -184,7 +170,6 @@ public class BuildManager : MonoBehaviour
 
         if (node.turret != null)
         {
-            // Try Fusion
             TowerBase existingTower = node.turret.GetComponent<TowerBase>();
             TowerBase draggedTowerComp = draggedBlueprint.prefab.GetComponent<TowerBase>();
             
@@ -193,80 +178,51 @@ public class BuildManager : MonoBehaviour
                 GameObject fusedPrefab = FusionManager.Instance.GetFusionResult(existingTower.Element, draggedTowerComp.Element);
                 if (fusedPrefab != null)
                 {
-                    if (GameManager.Instance.CurrentGold >= draggedBlueprint.cost) // Fusion cost same as tower placement for now or specific fusion cost
+                    if (GameManager.Instance.CurrentGold >= draggedBlueprint.cost)
                     {
-                        GameManager.Instance.SpendGold(draggedBlueprint.cost); // Corrected line
+                        GameManager.Instance.SpendGold(draggedBlueprint.cost);
                         FuseTowers(node, fusedPrefab);
-                        return; // Successfully fused, don't build!
+                        return;
                     }
                     else
                     {
-                        Debug.Log("[BuildManager] Not enough gold for fusion!");
-                        return; // Don't build if we attempted fusion but failed due to gold
+                        return;
                     }
                 }
             }
         }
         
-        // If no fusion was done, try building
         BuildTurretOn(node);
     }
 
     private void FuseTowers(Node node, GameObject fusedPrefab)
     {
-        // 1. Spawn Smoke VFX
         if (SmokeVFXPrefab != null)
         {
             GameObject smoke = Instantiate(SmokeVFXPrefab, node.transform.position, Quaternion.identity);
-            Destroy(smoke, 2f); // Auto destroy
+            Destroy(smoke, 2f);
         }
 
-        // 2. Clear existing turret
         if (node.turret != null)
         {
             Destroy(node.turret);
         }
 
-        // 3. Spawn new fused turret
         GameObject newTower = Instantiate(fusedPrefab, node.transform.position, Quaternion.identity);
         node.turret = newTower;
         
-        if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.25f, 0.1f); // Stronger shake for fusion
-        
-        Debug.Log("Fusion Successful!");
+        if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.25f, 0.1f);
     }
 
     public void BuildTurretOn(Node node)
     {
-        if (node == null)
-        {
-            Debug.LogError("[BuildManager] Build failed: Node is null!");
-            return;
-        }
-
-        if (node.turret != null)
-        {
-            Debug.LogWarning("[BuildManager] Cannot build: There is already a turret on this node!");
-            return;
-        }
-
-        if (towerToBuild == null)
-        {
-            Debug.LogError("[BuildManager] Build failed: No tower selected! Make sure to select a tower from the UI first.");
-            return;
-        }
-
-        if (towerToBuild.prefab == null)
-        {
-            Debug.LogError($"[BuildManager] Build failed: Prefab for {towerToBuild.cost} tower is null! Check your BuildButton assignment.");
-            return;
-        }
-
-        Debug.Log($"BuildManager: Attempting to build {towerToBuild.prefab.name} for {towerToBuild.cost} gold");
+        if (node == null) return;
+        if (node.turret != null) return;
+        if (towerToBuild == null) return;
+        if (towerToBuild.prefab == null) return;
 
         if (GameManager.Instance.SpendGold(towerToBuild.cost))
         {
-            // Spawn Smoke VFX
             if (SmokeVFXPrefab != null)
             {
                 GameObject smoke = Instantiate(SmokeVFXPrefab, node.transform.position, Quaternion.identity);
@@ -276,15 +232,7 @@ public class BuildManager : MonoBehaviour
             GameObject turret = Instantiate(towerToBuild.prefab, node.transform.position, Quaternion.identity);
             node.turret = turret;
             
-            // Screen Shake on build
             if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.15f, 0.05f);
-
-            Debug.Log($"Tower Built at {node.transform.position}!");
-        }
-        else
-        {
-            Debug.Log($"Not enough Money! Need {towerToBuild.cost}, have {GameManager.Instance.CurrentGold}");
         }
     }
 }
-

@@ -46,11 +46,6 @@ public class EnemyAnimator : MonoBehaviour
             Sprite s = Resources.Load<Sprite>($"{folderPath}/{fileName}");
             if (s != null) sprites.Add(s);
         }
-
-        if (sprites.Count == 0)
-        {
-            Debug.LogWarning($"[EnemyAnimator] No sprites found for {action} in {folderPath}");
-        }
         
         return sprites.ToArray();
     }
@@ -60,7 +55,6 @@ public class EnemyAnimator : MonoBehaviour
         if (_currentState == state && _animationCoroutine != null && _isLooping == loop && _isLooping) return;
         
         _onComplete = onComplete;
-
         _currentState = state;
         _isLooping = loop;
 

@@ -4,13 +4,11 @@ using UnityEngine.UI;
 
 public class EnemyBase : MonoBehaviour
 {
-    [Header("Stats")]
     public float MaxHP = 100f;
     public float Speed = 5f;
     public int CoinValue = 10;
     public EnemyType Type;
 
-    [Header("References")]
     public Renderer EnemyRenderer; 
     public Slider HealthBar; 
     public GameObject CoinPrefab;
@@ -21,7 +19,6 @@ public class EnemyBase : MonoBehaviour
     private int _targetWaypointIndex;
     private float _baseSpeed;
     
-    [Header("Status Visuals")]
     public GameObject FreezeOverlay; 
     public GameObject ShockOverlay;  
     public Color FreezeColor = new Color(0.5f, 0.8f, 1f, 1f);
@@ -43,7 +40,6 @@ public class EnemyBase : MonoBehaviour
     public bool ResistanceEnabled = true; 
     public bool IsDead => _isDead;
     private Vector3 _lastPosition;
-
 
     private EnemyAnimator _animator;
 
@@ -114,21 +110,14 @@ public class EnemyBase : MonoBehaviour
 
         float moveDelta = transform.position.x - _lastPosition.x;
         
-        // Ignore very small movements (precision issues)
         if (Mathf.Abs(moveDelta) > 0.001f)
         {
-            // Face right if moving right, left if moving left
-            // We flip the entire transform to ensure all child objects (like health bars) face correctly
-            // OR we just flip the renderer. Flipping the renderer is safer for UI.
-            
             if (EnemyRenderer is SpriteRenderer sr)
             {
                 sr.flipX = moveDelta < 0;
             }
             else
             {
-                // For 3D or non-sprite, we can use rotation or scale
-                // But since user specified "left and right only", simple flip is best
                 Vector3 scale = transform.localScale;
                 if (moveDelta < 0 && scale.x > 0) scale.x *= -1;
                 else if (moveDelta > 0 && scale.x < 0) scale.x *= -1;
@@ -408,24 +397,24 @@ public class EnemyBase : MonoBehaviour
             {
                 case ElementType.Fire:
                 case ElementType.FireFire:
-                    dColor = new Color(1f, 0.3f, 0.1f); // Orange/Red
+                    dColor = new Color(1f, 0.3f, 0.1f);
                     break;
                 case ElementType.Ice:
                 case ElementType.IceIce:
-                    dColor = new Color(0.3f, 0.6f, 1f); // Blue
+                    dColor = new Color(0.3f, 0.6f, 1f);
                     break;
                 case ElementType.Lightning:
                 case ElementType.LightningLightning:
-                    dColor = new Color(1f, 1f, 0.1f); // Yellow
+                    dColor = new Color(1f, 1f, 0.1f);
                     break;
                 case ElementType.FireIce:
-                    dColor = new Color(0.7f, 0.5f, 1f); // Purple-ish
+                    dColor = new Color(0.7f, 0.5f, 1f);
                     break;
                 case ElementType.FireLightning:
-                    dColor = new Color(1f, 0.6f, 0f); // Bright Orange
+                    dColor = new Color(1f, 0.6f, 0f);
                     break;
                 case ElementType.IceLightning:
-                    dColor = new Color(0.2f, 1f, 0.8f); // Cyan
+                    dColor = new Color(0.2f, 1f, 0.8f);
                     break;
             }
             popup.Setup(damage, dColor);
@@ -447,13 +436,13 @@ public class EnemyBase : MonoBehaviour
                 _originalColor = Color.white;
                 break;
             case EnemyType.Runner:
-                _originalColor = new Color(0.4f, 1f, 0.4f, 1f); // Green for speed
+                _originalColor = new Color(0.4f, 1f, 0.4f, 1f);
                 break;
             case EnemyType.Tank:
-                _originalColor = new Color(0.5f, 0.5f, 0.5f, 1f); // Grey for tank
+                _originalColor = new Color(0.5f, 0.5f, 0.5f, 1f);
                 break;
             case EnemyType.Boss:
-                _originalColor = new Color(1f, 0.2f, 0.8f, 1f); // Pink/Purple for boss
+                _originalColor = new Color(1f, 0.2f, 0.8f, 1f);
                 break;
             default:
                 _originalColor = Color.white;
@@ -533,10 +522,6 @@ public class EnemyBase : MonoBehaviour
         }
 
         if (WaveManager.Instance != null) WaveManager.Instance.NotifyEnemyDestroyed();
-    }
-
-    private void OnDestroy()
-    {
     }
 
     private static readonly int FlashAmountID = Shader.PropertyToID("_FlashAmount");

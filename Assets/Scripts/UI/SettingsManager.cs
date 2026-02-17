@@ -7,18 +7,14 @@ public class SettingsManager : MonoBehaviour
 {
     public static SettingsManager Instance;
 
-    [Header("Audio")]
     public AudioMixer MasterMixer;
     
-    [Header("UI Elements (Optional Bindings)")]
     public Slider MasterVolumeSlider;
     public Slider MusicVolumeSlider;
     public Slider SFXVolumeSlider;
 
     private void Awake()
     {
-        // New Boss Pattern:
-        // We prioritize this FRESH instance because it contains the new scene's slider connections.
         if (Instance != null && Instance != this)
         {
             if (Instance.gameObject != gameObject)
@@ -46,18 +42,12 @@ public class SettingsManager : MonoBehaviour
         if (Instance == this) Instance = null;
     }
 
-    /// <summary>
-    /// Ensures that sliders in the current scene are correctly linked to this manager.
-    /// This is vital when returning to the Main Menu from the Game Proper.
-    /// </summary>
     public void RefreshUIBindings()
     {
-        // Attempt to find sliders by name if they are missing in the inspector
         if (MasterVolumeSlider == null) MasterVolumeSlider = FindSliderByName("MasterVolumeSlider");
         if (MusicVolumeSlider == null) MusicVolumeSlider = FindSliderByName("MusicVolumeSlider");
         if (SFXVolumeSlider == null) SFXVolumeSlider = FindSliderByName("SFXVolumeSlider");
 
-        // Set up listeners for found sliders
         if (MasterVolumeSlider != null) 
         {
             MasterVolumeSlider.onValueChanged.RemoveAllListeners();
@@ -150,7 +140,6 @@ public class SettingsManager : MonoBehaviour
         SetMusicVolume(music);
         SetSFXVolume(sfx);
 
-        // Update slider visuals to match loaded values
         if (MasterVolumeSlider != null) MasterVolumeSlider.value = master;
         if (MusicVolumeSlider != null) MusicVolumeSlider.value = music;
         if (SFXVolumeSlider != null) SFXVolumeSlider.value = sfx;

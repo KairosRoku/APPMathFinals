@@ -4,32 +4,29 @@ using UnityEngine.UI;
 
 public class Coin : MonoBehaviour
 {
-    private Transform targetUI; // We need to find the UI coin icon
+    private Transform targetUI;
     private float speed = 15f;
     private bool performFly = false;
     private Vector3 targetPos;
 
     private void Start()
     {
-        // Find CoinUI via GameUI Singleton
         if (GameUI.Instance != null && GameUI.Instance.GoldText != null)
         {
             targetUI = GameUI.Instance.GoldText.transform;
             targetPos = Camera.main.ScreenToWorldPoint(targetUI.position);
-            targetPos.z = 0; // Ensure 2D
+            targetPos.z = 0;
             
             StartCoroutine(FlyDelay());
         }
         else
         {
-            // Just destroy if no UI
              Destroy(gameObject, 0.5f);
         }
     }
 
     IEnumerator FlyDelay()
     {
-        // Little "pop" effect before flying
         Vector3 startScale = transform.localScale;
         Vector3 endScale = startScale * 1.5f;
         float t = 0;

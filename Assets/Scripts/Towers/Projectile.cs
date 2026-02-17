@@ -12,10 +12,9 @@ public class Projectile : MonoBehaviour
     private float _spreadingRadius;
     
     public float Speed = 10f;
-    public float TargetOffset = 0.5f; // Aim for center, not feet
+    public float TargetOffset = 0.5f;
     public GameObject ImpactVFXPrefab;
 
-    [Header("Trail Settings")]
     public GameObject TrailPrefab;
     public float TrailSpawnRate = 0.05f;
     private float _trailTimer = 0f;
@@ -52,7 +51,6 @@ public class Projectile : MonoBehaviour
 
         transform.Translate(dir.normalized * distanceThisFrame, Space.World);
         
-        // Handle Trail
         if (TrailPrefab != null)
         {
             _trailTimer += Time.deltaTime;
@@ -63,7 +61,6 @@ public class Projectile : MonoBehaviour
             }
         }
 
-        // Rotate (2D)
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
     }
@@ -106,10 +103,8 @@ public class Projectile : MonoBehaviour
 
     private void Spread()
     {
-        // Hit primary
         ApplyEffects(_target);
 
-        // Spread to others
         EnemyBase[] enemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
         foreach (EnemyBase enemy in enemies)
         {
@@ -118,7 +113,6 @@ public class Projectile : MonoBehaviour
             float dist = Vector3.Distance(_target.transform.position, enemy.transform.position);
             if (dist <= _spreadingRadius)
             {
-                // Apply reduced damage and burn for spread
                 enemy.TakeDamage(_damage * 0.5f, _element);
                 enemy.ApplyBurn(_burnDmg * 0.5f, 3f);
             }
@@ -129,22 +123,19 @@ public class Projectile : MonoBehaviour
     {
         enemy.TakeDamage(_damage, _element);
 
-        // Fire status (DoT)
         if (_element == ElementType.Fire || _element == ElementType.FireIce || _element == ElementType.FireLightning || _element == ElementType.FireFire)
         {
             enemy.ApplyBurn(_burnDmg, 3f);
         }
 
-        // Ice status (Slow)
         if (_element == ElementType.Ice || _element == ElementType.FireIce || _element == ElementType.IceLightning)
         {
             enemy.ApplySlow(_slowAmt, _slowDur);
         }
         
-        // IceIce (Freeze)
         if (_element == ElementType.IceIce)
         {
-            enemy.ApplySlow(1f, _slowDur); // 100% slow = Freeze
+            enemy.ApplySlow(1f, _slowDur);
         }
     }
 }

@@ -13,41 +13,33 @@ public class GameUI : MonoBehaviour
         if (Instance == null) 
         {
             Instance = this;
-            Debug.Log("[GameUI] Instance initialized.");
         }
         else
         {
-            Debug.LogWarning("[GameUI] Duplicate Instance found! Destroying this one.");
             Destroy(this);
         }
     }
 
-    [Header("Text Elements")]
     public TextMeshProUGUI GoldText;
     public TextMeshProUGUI CountdownText;
     
-    [Header("Icons and Bars")]
-    public Image HealthBarFillImage; // The "Full Bar" image
+    public Image HealthBarFillImage;
     public Image GoldIconImage;
 
-    [Header("Buttons")]
     public Button StartWaveButton;
     public GameObject PauseButton;
     public GameObject ResumeButton;
     public Button[] RestartButtons; 
     public Button[] HomeButtons;
 
-    [Header("Wave Indicator")]
     public Image WaveIndicatorImage;
-    public Sprite[] WaveSprites; // Array of 10 sprites for waves 1-10
+    public Sprite[] WaveSprites;
 
-    [Header("Panels")]
     public GameObject PauseMenuPanel;
-    public GameObject SettingsPanel; // Sub-panel of Pause Menu
+    public GameObject SettingsPanel;
     public GameObject GameOverPanel;
     public GameObject VictoryPanel;
     
-    [Header("Effects")]
     public Image DamageVignette;
 
     private System.Collections.Generic.Stack<GameObject> _panelHistory = new System.Collections.Generic.Stack<GameObject>();
@@ -64,11 +56,9 @@ public class GameUI : MonoBehaviour
         GameManager.Instance.OnGameLost += ShowGameOver;
         GameManager.Instance.OnGameWon += ShowVictory;
         
-        // Init
         UpdateGold(GameManager.Instance.CurrentGold);
         UpdateHealth(GameManager.Instance.CurrentHealth);
         
-        // Capture original scales before disabling
         if (PauseMenuPanel != null) _initialScales[PauseMenuPanel] = PauseMenuPanel.transform.localScale;
         if (SettingsPanel != null) _initialScales[SettingsPanel] = SettingsPanel.transform.localScale;
         if (GameOverPanel != null) _initialScales[GameOverPanel] = GameOverPanel.transform.localScale;
@@ -81,22 +71,14 @@ public class GameUI : MonoBehaviour
         if (ResumeButton != null) ResumeButton.SetActive(false);
         if (PauseButton != null) PauseButton.SetActive(true);
         
-        // Initialize Wave UI
         UpdateWave(1);
         
-        // Check for EventSystem
-        if (UnityEngine.EventSystems.EventSystem.current == null)
-        {
-            Debug.LogError("[GameUI] CRITICAL: No EventSystem found in the scene! UI buttons will not work. Please add one (Right-Click UI -> EventSystem).");
-        }
-
         if (CountdownText != null)
         {
             _originalCountdownColor = CountdownText.color;
             _originalCountdownScale = CountdownText.transform.localScale;
-            CountdownText.text = ""; // Ensure it's empty at start
+            CountdownText.text = "";
             
-            // Force Centering
             CountdownText.alignment = TextAlignmentOptions.Center;
             RectTransform rect = CountdownText.GetComponent<RectTransform>();
             if (rect != null)
@@ -145,7 +127,6 @@ public class GameUI : MonoBehaviour
         if (Instance == this) Instance = null;
     }
 
-    // Lerp Gold for smooth feedback
     private Coroutine goldCoroutine;
     private int _currentVisualGold;
 
@@ -173,7 +154,6 @@ public class GameUI : MonoBehaviour
 
     private void UpdateHealth(int health)
     {
-        // Update Health Bar Fill with Lerp
         if (HealthBarFillImage != null && GameManager.Instance != null)
         {
             float targetFill = (float)health / GameManager.Instance.StartingHealth;
@@ -198,10 +178,9 @@ public class GameUI : MonoBehaviour
 
     public void UpdateWave(int wave)
     {
-        // Update sprite if indicator and sprites are assigned
         if (WaveIndicatorImage != null && WaveSprites != null && WaveSprites.Length > 0)
         {
-            int index = wave - 1; // wave is 1-indexed
+            int index = wave - 1;
             if (index >= 0 && index < WaveSprites.Length)
             {
                 WaveIndicatorImage.sprite = WaveSprites[index];
@@ -209,14 +188,12 @@ public class GameUI : MonoBehaviour
         }
     }
 
-
     private int _lastCountdownValue = -1;
 
     public void UpdateCountdown(float timeLeft)
     {
         if (CountdownText == null) return;
 
-        // Only show 3, 2, 1
         if (timeLeft > 0.1f && timeLeft <= 3.5f)
         {
             int currentVal = Mathf.CeilToInt(timeLeft);
@@ -239,7 +216,7 @@ public class GameUI : MonoBehaviour
     {
         if (CountdownText == null) return;
         CountdownText.text = "GO!";
-        CountdownText.color = new Color(0.1f, 1f, 0.1f); // Greenish
+        CountdownText.color = new Color(0.1f, 1f, 0.1f);
         StartCoroutine(PopText(CountdownText.transform, 1.5f));
         StartCoroutine(FadeOutText(CountdownText, 1f));
     }
@@ -274,7 +251,7 @@ public class GameUI : MonoBehaviour
             yield return null;
         }
         text.text = "";
-        text.color = baseColor; // Reset alpha for next use
+        text.color = baseColor;
     }
 
     private void PlayDamageEffect()
@@ -305,21 +282,19 @@ public class GameUI : MonoBehaviour
             GameOverPanel.SetActive(true);
             StartCoroutine(AnimateScaleOpen(GameOverPanel.transform));
         }
-        Time.timeScale = 0; // Pause game on game over
+        Time.timeScale = 0;
     }
 
-    private void ShowVictory() // New method to show victory panel
+    private void ShowVictory()
     {
         if (VictoryPanel != null) 
         {
             VictoryPanel.SetActive(true);
             StartCoroutine(AnimateScaleOpen(VictoryPanel.transform));
         }
-        Time.timeScale = 0; // Pause game on victory
+        Time.timeScale = 0;
     }
 
-    // --- Pause Menu Logic ---
-    
     public void TogglePause()
     {
         bool isPaused = Time.timeScale == 0;
@@ -330,7 +305,7 @@ public class GameUI : MonoBehaviour
     public void Pause()
     {
         Time.timeScale = 0;
-        _panelHistory.Clear(); // Reset history when pausing
+        _panelHistory.Clear();
         if (PauseMenuPanel != null) 
         {
             PauseMenuPanel.SetActive(true);
@@ -338,12 +313,11 @@ public class GameUI : MonoBehaviour
         }
         if (SettingsPanel != null) SettingsPanel.SetActive(false);
 
-        // Toggle buttons
         if (PauseButton != null) PauseButton.SetActive(false);
         if (ResumeButton != null) 
         {
             ResumeButton.SetActive(true);
-            ResumeButton.transform.SetAsLastSibling(); // Bring to front
+            ResumeButton.transform.SetAsLastSibling();
         }
     }
 
@@ -354,11 +328,10 @@ public class GameUI : MonoBehaviour
         if (PauseMenuPanel != null) PauseMenuPanel.SetActive(false);
         if (SettingsPanel != null) SettingsPanel.SetActive(false);
 
-        // Toggle buttons
         if (PauseButton != null) 
         {
             PauseButton.SetActive(true);
-            PauseButton.transform.SetAsLastSibling(); // Bring to front
+            PauseButton.transform.SetAsLastSibling();
         }
         if (ResumeButton != null) ResumeButton.SetActive(false);
     }
@@ -382,17 +355,14 @@ public class GameUI : MonoBehaviour
     {
         if (_panelHistory.Count > 0)
         {
-            // Hide current active panels
             if (SettingsPanel != null) SettingsPanel.SetActive(false);
             
-            // Show previously active panel
             GameObject previousPanel = _panelHistory.Pop();
             previousPanel.SetActive(true);
             StartCoroutine(AnimateScaleOpen(previousPanel.transform));
         }
         else
         {
-            // If no history, just resume or stay in pause
             Resume();
         }
     }
@@ -438,4 +408,3 @@ public class GameUI : MonoBehaviour
         target.localScale = targetScale;
     }
 }
-

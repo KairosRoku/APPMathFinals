@@ -7,7 +7,6 @@ namespace TowerDefense.UI
     {
         public static UIManager Instance { get; private set; }
 
-        [Header("Global UI Settings")]
         public bool ShowCursor = true;
 
         private void Awake()
@@ -16,13 +15,10 @@ namespace TowerDefense.UI
             {
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
-                
-                // Ensure correct cursor state on initialization
                 UpdateCursorState();
             }
             else if (Instance != this)
             {
-                // If a duplicate exists, destroy the new one, not the old boss.
                 Destroy(gameObject);
             }
         }
@@ -46,13 +42,11 @@ namespace TowerDefense.UI
         {
             UpdateCursorState();
             
-            // Re-ensure EventSystem exists in every scene
             if (UnityEngine.EventSystems.EventSystem.current == null)
             {
                 GameObject eventSystem = new GameObject("EventSystem");
                 eventSystem.AddComponent<UnityEngine.EventSystems.EventSystem>();
                 eventSystem.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
-                Debug.Log("[UIManager] Created missing EventSystem.");
             }
         }
 
@@ -76,9 +70,6 @@ namespace TowerDefense.UI
             UpdateCursorState();
         }
 
-        /// <summary>
-        /// Global helper to return to the Main Menu safely.
-        /// </summary>
         public void ReturnToMainMenu()
         {
             Time.timeScale = 1;

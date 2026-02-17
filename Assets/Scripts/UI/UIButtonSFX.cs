@@ -7,10 +7,10 @@ using System.Collections.Generic;
 public class UIButtonSFX : MonoBehaviour, IPointerDownHandler
 {
     public AudioClip ClickSFX;
-    [Range(0f, 1f)]
     public float Volume = 0.5f;
 
     private Button _button;
+
     private void Start()
     {
         _button = GetComponent<Button>();
@@ -26,7 +26,6 @@ public class UIButtonSFX : MonoBehaviour, IPointerDownHandler
             }
             else
             {
-                // Fallback to global button click sound in AudioManager
                 AudioManager.Instance.PlayClickSFX();
             }
         }

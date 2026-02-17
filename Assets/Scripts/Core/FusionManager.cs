@@ -8,7 +8,6 @@ public class FusionManager : MonoBehaviour
     public Button FusionButton;
     public AudioClip FusionSFX;
     private Node _nodeA;
-
     private Node _nodeB;
 
     [System.Serializable]
@@ -38,7 +37,6 @@ public class FusionManager : MonoBehaviour
 
     public void SelectForFusion(Node node)
     {
-        // Toggle selection logic
         if (_nodeA == node) 
         {
             _nodeA = null;
@@ -57,7 +55,6 @@ public class FusionManager : MonoBehaviour
         }
         else 
         {
-            // Both selected, maybe replace one?
             _nodeA = node;
             _nodeB = null;
         }
@@ -73,9 +70,6 @@ public class FusionManager : MonoBehaviour
         {
             TowerBase t1 = _nodeA.turret.GetComponent<TowerBase>();
             TowerBase t2 = _nodeB.turret.GetComponent<TowerBase>();
-
-            // Check adjacency (Grid distance) OR just arbitrary selection as per GDD "Select together"
-            // Assuming "Selected together" means sequential clicks.
             
             if (t1 != null && t2 != null)
             {
@@ -87,9 +81,6 @@ public class FusionManager : MonoBehaviour
         if (FusionButton != null) FusionButton.gameObject.SetActive(possible);
     }
 
-
-    
-    // Correction: Redo method with proper types
     public GameObject GetFusionResult(ElementType e1, ElementType e2)
     {
         foreach (var recipe in Recipes)
@@ -113,28 +104,23 @@ public class FusionManager : MonoBehaviour
          
          if (prefab != null)
          {
-             // Cost? GDD says "Fusion requires coins". Let's assume arbitrary cost or sum
              int cost = 50; 
              if (!GameManager.Instance.SpendGold(cost)) return;
 
-             // Destroy old
              Destroy(_nodeA.turret);
              Destroy(_nodeB.turret);
              
-             _nodeA.turret = null; // Free up Node A
+             _nodeA.turret = null;
              
-             // Build New on Node B (Arbitrary choice, or user choice)
              GameObject newTower = Instantiate(prefab, _nodeB.transform.position, Quaternion.identity);
              _nodeB.turret = newTower;
              
-             // Play SFX
              if (GameManager.Instance != null && GameManager.Instance.AudioManager != null)
              {
                  if (FusionSFX != null) GameManager.Instance.AudioManager.PlaySFX(FusionSFX);
                  else GameManager.Instance.AudioManager.PlaySFX("fusion_01");
              }
 
-            // Reset Selection
             _nodeA = null;
             _nodeB = null;
             FusionButton.gameObject.SetActive(false);

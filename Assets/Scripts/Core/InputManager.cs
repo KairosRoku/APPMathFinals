@@ -9,21 +9,18 @@ public class InputManager : MonoBehaviour
     private Node _currentNode;
     private Camera _cam;
 
-    [Header("Hotkey Tower Blueprints")]
-    public TowerBlueprint Tower1; // Usually Fire
-    public TowerBlueprint Tower2; // Usually Ice
-    public TowerBlueprint Tower3; // Usually Lightning
+    public TowerBlueprint Tower1;
+    public TowerBlueprint Tower2; 
+    public TowerBlueprint Tower3; 
 
     private void Start()
     {
         EnsureCamera();
         _allNodes = FindObjectsByType<Node>(FindObjectsSortMode.None);
-        Debug.Log($"[InputManager] Started. Found {_allNodes.Length} nodes.");
     }
 
     private bool EnsureCamera()
     {
-        // Refresh if null OR if the object exists but its native representation is dead ("Missing")
         if (_cam == null) 
         {
             _cam = Camera.main;
@@ -34,33 +31,28 @@ public class InputManager : MonoBehaviour
     private void Update()
     {
         if (!EnsureCamera()) return;
-        // Toggle Pause
+        
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             if (GameUI.Instance != null) GameUI.Instance.TogglePause();
         }
 
-        // Hotkeys for Tower Selection
         if (Keyboard.current != null)
         {
             if (Keyboard.current.digit1Key.wasPressedThisFrame && Tower1 != null) 
             {
-                Debug.Log("[InputManager] Hotkey 1: Selecting Tower 1");
                 BuildManager.Instance.SelectTowerToBuild(Tower1);
             }
             if (Keyboard.current.digit2Key.wasPressedThisFrame && Tower2 != null) 
             {
-                Debug.Log("[InputManager] Hotkey 2: Selecting Tower 2");
                 BuildManager.Instance.SelectTowerToBuild(Tower2);
             }
             if (Keyboard.current.digit3Key.wasPressedThisFrame && Tower3 != null) 
             {
-                Debug.Log("[InputManager] Hotkey 3: Selecting Tower 3");
                 BuildManager.Instance.SelectTowerToBuild(Tower3);
             }
         }
 
-        // Block input if clicking on UI
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) 
         {
              return;
@@ -68,8 +60,6 @@ public class InputManager : MonoBehaviour
 
         HandleNodeInteraction();
     }
-
-
 
     private void HandleNodeInteraction()
     {
@@ -85,7 +75,6 @@ public class InputManager : MonoBehaviour
             foundNode = hit.transform.GetComponent<Node>();
         }
 
-        // Hover Logic
         if (foundNode != _currentNode)
         {
             if (_currentNode != null) _currentNode.OnHoverExit();
@@ -93,17 +82,11 @@ public class InputManager : MonoBehaviour
             if (_currentNode != null) _currentNode.OnHoverEnter();
         }
 
-        // Click Logic
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             if (_currentNode != null)
             {
-                Debug.Log($"[InputManager] Clicked Node: {_currentNode.gameObject.name}");
                 _currentNode.OnClick();
-            }
-            else
-            {
-                Debug.Log("[InputManager] Clicked but no Node found under mouse.");
             }
         }
     }

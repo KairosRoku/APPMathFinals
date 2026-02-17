@@ -39,7 +39,6 @@ public class PathController : MonoBehaviour
                 break;
         }
 
-        // Draw Waypoints as small spheres
         Gizmos.color = Color.white;
         foreach (var wp in Waypoints)
         {
@@ -66,7 +65,6 @@ public class PathController : MonoBehaviour
             return;
         }
 
-        // Segments are (0,1,2), (2,3,4), (4,5,6)...
         for (int i = 0; i < Waypoints.Length - 1; i += 2)
         {
             if (i + 2 >= Waypoints.Length) break;
@@ -94,7 +92,6 @@ public class PathController : MonoBehaviour
             return;
         }
 
-        // Segments are (0,1,2,3), (3,4,5,6), (6,7,8,9)...
         for (int i = 0; i < Waypoints.Length - 1; i += 3)
         {
             if (i + 3 >= Waypoints.Length) break;

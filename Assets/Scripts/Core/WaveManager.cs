@@ -30,20 +30,16 @@ public class WaveManager : MonoBehaviour
 {
     public static WaveManager Instance;
 
-    [Header("Enemy Prefabs")]
     public GameObject GruntPrefab;
     public GameObject RunnerPrefab;
     public GameObject TankPrefab;
     public GameObject BossPrefab;
 
-    [Header("Wave Data")]
     public Wave[] Waves;
     public Transform SpawnPoint;
 
-    [Header("Settings")]
     public float AutoStartThreshold = 30f;
     
-    [Header("Status")]
     [SerializeField] private int waveIndex = 0;
     private bool _waveInProgress = false;
     private float _nextWaveTimer = 0f;
@@ -53,11 +49,9 @@ public class WaveManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            // Transfer scene-specific data to the persistent instance
             Instance.Waves = this.Waves;
             Instance.SpawnPoint = this.SpawnPoint;
             
-            // Prefabs might be updated/changed per level
             Instance.GruntPrefab = this.GruntPrefab;
             Instance.RunnerPrefab = this.RunnerPrefab;
             Instance.TankPrefab = this.TankPrefab;
@@ -85,7 +79,6 @@ public class WaveManager : MonoBehaviour
         _nextWaveTimer = 5f;
         ActiveEnemyCount = 0;
 
-        // Repair references if they are lost (important if manager is persistent)
         if (SpawnPoint == null)
         {
             GameObject sp = GameObject.Find("SpawnPoint");
@@ -140,7 +133,6 @@ public class WaveManager : MonoBehaviour
             
             if (prefabToSpawn == null)
             {
-                Debug.LogError($"No prefab assigned for enemy type {batch.type} in wave {waveIndex + 1}");
                 continue;
             }
 
@@ -181,7 +173,6 @@ public class WaveManager : MonoBehaviour
 
     private void CheckForVictory()
     {
-        // Only win if all waves spawned AND no enemies left progress
         if (!_waveInProgress && waveIndex >= Waves.Length && ActiveEnemyCount <= 0)
         {
             GameManager.Instance.Victory();
@@ -205,52 +196,40 @@ public class WaveManager : MonoBehaviour
     {
         Waves = new Wave[10];
         
-        // Wave 1: 5 Grunts
         Waves[0] = CreateWave(2f, 1f, new EnemyBatch(EnemyType.Grunt, 5));
         
-        // Wave 2: 4 Grunts, 4 Runners (No Resistance)
         Waves[1] = CreateWave(2f, 1f, 
             new EnemyBatch(EnemyType.Grunt, 4), 
             new EnemyBatch(EnemyType.Runner, 4, false));
             
-        // Wave 3: 6 Grunts, 6 Tanks
         Waves[2] = CreateWave(2f, 1f, 
             new EnemyBatch(EnemyType.Grunt, 6), 
             new EnemyBatch(EnemyType.Tank, 6));
             
-        // Wave 4: 8 Runners, 8 Tanks
         Waves[3] = CreateWave(2f, 1f, 
             new EnemyBatch(EnemyType.Runner, 8), 
             new EnemyBatch(EnemyType.Tank, 8));
             
-        // Wave 5: Mixed Balance (7 Grunts, 7 Runners, 8 Tanks = 22)
         Waves[4] = CreateWave(2f, 1.2f, 
             new EnemyBatch(EnemyType.Grunt, 7), 
             new EnemyBatch(EnemyType.Runner, 7),
             new EnemyBatch(EnemyType.Tank, 8));
             
-        // Wave 6: High Density Runners (28)
         Waves[5] = CreateWave(2f, 2.0f, new EnemyBatch(EnemyType.Runner, 28));
         
-        // Wave 7: High Density Tanks (35)
         Waves[6] = CreateWave(2f, 2.0f, new EnemyBatch(EnemyType.Tank, 35));
         
-        // Wave 8: Speed Variation (23 Runners, 20 Tanks = 43)
         Waves[7] = CreateWave(2f, 1.5f, 
             new EnemyBatch(EnemyType.Runner, 23), 
             new EnemyBatch(EnemyType.Tank, 20));
             
-        // Wave 9: High Health (52 Tanks)
         Waves[8] = CreateWave(2f, 1.5f, new EnemyBatch(EnemyType.Tank, 52));
         
-        // Wave 10: Boss + All Types (21 Grunts, 21 Runners, 22 Tanks, 1 Boss = 65)
         Waves[9] = CreateWave(2f, 3.0f, 
             new EnemyBatch(EnemyType.Grunt, 21), 
             new EnemyBatch(EnemyType.Runner, 21),
             new EnemyBatch(EnemyType.Tank, 22),
             new EnemyBatch(EnemyType.Boss, 1));
-
-        Debug.Log("Generated 10-wave plan. Please ensure all 4 Enemy Prefabs are assigned in the WaveManager inspector.");
     }
 
     private Wave CreateWave(float rate, float density, params EnemyBatch[] batches)

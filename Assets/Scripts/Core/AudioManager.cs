@@ -6,27 +6,21 @@ public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance { get; private set; }
 
-    [Header("Audio Mixer")]
     public AudioMixer MainMixer;
     public string MasterParam = "MasterVol";
     public string MusicParam = "MusicVol";
     public string SFXParam = "SFXVol";
 
-    [Header("Sources")]
     public AudioSource MusicSource;
     public AudioSource SFXSource;
 
-    [Header("BGM")]
     public AudioClip DefaultBGM;
-    
-    [Header("UI SFX")]
     public AudioClip DefaultClickSFX;
 
     private Dictionary<string, AudioClip> _clipLibrary = new Dictionary<string, AudioClip>();
 
     private void Awake()
     {
-        // New Boss Pattern: Prefer the fresh instance in the scene
         if (Instance != null && Instance != this)
         {
             if (Instance.gameObject != gameObject)
@@ -47,13 +41,11 @@ public class AudioManager : MonoBehaviour
 
     private void LoadLibrary()
     {
-        // Pre-load all clips from Resources/Audio if available
         AudioClip[] clips = Resources.LoadAll<AudioClip>("Audio");
         foreach (var clip in clips)
         {
             _clipLibrary[clip.name] = clip;
         }
-        Debug.Log($"[AudioManager] Library loaded with {_clipLibrary.Count} clips.");
     }
 
     private void Start()
@@ -64,7 +56,6 @@ public class AudioManager : MonoBehaviour
         }
         else
         {
-            // Fallback to name search in library if direct reference is missing
             PlayMusic("BackgroundMusic");
         }
     }
@@ -115,7 +106,6 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    // Mixer Controls
     public void SetMasterVolume(float volume)
     {
         SetMixerParameter(MasterParam, volume);
